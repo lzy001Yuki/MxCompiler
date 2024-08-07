@@ -1,14 +1,16 @@
 package AST.Def;
 
+import AST.ASTNode;
 import AST.ASTVisitor;
-import utils.DataType;
 import AST.Stat.blockStatNode;
 import utils.Position;
 
-public class mainDefNode extends defNode {
+public class constructNode extends ASTNode {
+    public String className;
     public blockStatNode blockStat;
-    public mainDefNode(Position p) {
+    public constructNode(Position p, String str) {
         super(p);
+        this.className = str;
     }
     @Override
     public void accept(ASTVisitor visitor) {

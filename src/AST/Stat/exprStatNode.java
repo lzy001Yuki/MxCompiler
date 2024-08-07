@@ -5,7 +5,7 @@ import AST.Expr.ExprNode;
 import utils.Position;
 
 public class exprStatNode extends statNode{
-    public ExprNode exprNode;
+    public ExprNode exprNode = null;
     public exprStatNode(Position p) {
         super(p);
     }

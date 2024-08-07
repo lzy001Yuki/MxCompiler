@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 public class ProgramNode extends ASTNode{
     public ArrayList<defNode> definition; // funcDef/classDef/varDef/mainDef
-    ProgramNode(Position p){
+    public ProgramNode(Position p){
         super(p);
         this.definition = new ArrayList<>();
     }

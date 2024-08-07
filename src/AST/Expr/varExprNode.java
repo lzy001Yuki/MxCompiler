@@ -3,11 +3,9 @@ package AST.Expr;
 import AST.ASTVisitor;
 import utils.Position;
 
-public class memberExprNode extends ExprNode{
-    public ExprNode obj;
-    public String member;
-    public memberExprNode(Position p) {
-        super(p);
+public class varExprNode extends ExprNode{
+    public varExprNode(Position pos) {
+        super(pos);
     }
     @Override
     public void accept(ASTVisitor visitor) {

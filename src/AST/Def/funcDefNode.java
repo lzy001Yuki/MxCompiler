@@ -8,22 +8,21 @@ import utils.Position;
 import java.util.ArrayList;
 
 public class funcDefNode extends defNode{
-    DataType returnType;
-    blockStatNode funcBlock;
-    static class paraDef {
-        public DataType paraType;
-        public String paraName;
-        paraDef(DataType t, String str) {
-            this.paraType = t;
-            this.paraName = str;
-        }
-    }
-    ArrayList<paraDef> paraList;
+    public DataType returnType;
+    public blockStatNode funcBlock;
+    public paraListNode para;
     public String funcName;
     public funcDefNode(Position p, String str) {
         super(p);
-        this.paraList = new ArrayList<>();
         this.funcName = str;
+    }
+    public funcDefNode(Position p, String str, DataType rt, ArrayList<paraDef> def) {
+        super(p);
+        this.funcName = str;
+        para = new paraListNode(null);
+        if (def != null) para.paraList = def;
+        returnType = rt;
+        funcBlock = new blockStatNode(null);
     }
     @Override
     public void accept(ASTVisitor visitor) {

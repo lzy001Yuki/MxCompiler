@@ -1,16 +1,16 @@
-package AST.Expr;
+package AST.Def;
+
+import AST.ASTNode;
 import AST.ASTVisitor;
 import utils.Position;
 
 import java.util.ArrayList;
 
-public class funcExprNode extends ExprNode{
-    public ExprNode exprNode;
-    public ArrayList<ExprNode> paraList;
-    public funcExprNode(Position p) {
+public class paraListNode extends ASTNode {
+    public ArrayList<paraDef> paraList;
+    public paraListNode(Position p) {
         super(p);
         paraList = new ArrayList<>();
-        type.isFunc = true;
     }
     @Override
     public void accept(ASTVisitor visitor) {

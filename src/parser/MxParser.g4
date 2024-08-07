@@ -14,9 +14,10 @@ classDef : Class Identifier '{' (varDef | constructor | funcDef)*  '}' ';';
 
 typename: (Int | Bool | String | Identifier)('['']')*;
 atom:Identifier | False | True | Integer | Str | Null | This | stringFormat;
+initArray:('{'(expr (Comma expr)*)?'}');
 expr
-    : New (Int | Bool | String | Identifier) ('['expr?']')+  ('{'(expr (Comma expr)*)?'}')?    #arrayExpr1
-    | '{'(expr (Comma expr)*)?'}'      #arrayExpr2
+    : New (Int | Bool | String | Identifier) ('['expr?']')+  initArray?    #arrayExpr1
+    | initArray      #arrayExpr2
     | New (Int | Bool | String | Identifier) ('('')')?       #varExpr
     | expr ('['expr']')+    #indexExpr
     | expr '('(expr (Comma expr)*)?')'       #funcExpr
@@ -24,15 +25,15 @@ expr
     | <assoc=right> op=(Not | Tilde | Add | Sub) expr       #unaryExpr
     | expr op=(Incre | Decre)      #postfixExpr
     | <assoc=right> op=(Incre | Decre) expr     #prefixExpr
-    | expr op=(Mul | Div | Mod) expr       #algorExpr1
-    | expr op=(Add | Sub) expr     #algorExpr2
-    | expr op=(LeftShift | RightShift) expr        #shiftExpr
-    | expr op=(GT | GET | LT | LET | NEQ | EQ) expr        #compExpr
-    | expr op=And expr      #andExpr
-    | expr op=Caret expr       #xorExpr
-    | expr op=Or expr      #orExpr
-    | expr op=AndAnd expr      #andandExpr
-    | expr op=OrOr expr        #ororExpr
+    | expr op=(Mul | Div | Mod) expr       #algorExpr
+    | expr op=(Add | Sub) expr     #algorExpr
+    | expr op=(LeftShift | RightShift) expr        #bitExpr
+    | expr op=(GT | GET | LT | LET | NEQ | EQ) expr        #logicExpr
+    | expr op=And expr      #bitExpr
+    | expr op=Caret expr       #bitExpr
+    | expr op=Or expr      #bitExpr
+    | expr op=AndAnd expr      #logicExpr
+    | expr op=OrOr expr        #logicExpr
     | <assoc=right> expr '?' expr ':' expr      #ternaryExpr
     | <assoc=right> expr op=Assign expr     #assignExpr
     | '(' expr ')'      #basicExpr
@@ -59,6 +60,6 @@ stat
     | ';'       #noneStat
     | If '(' expr ')' ifStat = stat (Else elseStat = stat)?     #ifStat
     | While '(' expr ')' stat       #whileStat
-    | For '(' init = stat condExpr = expr?';' stepExpr = expr? ')' stat      #forStat
+    | For '(' (init1 = varDef | init2 = expr?';')  condExpr = expr?';' stepExpr = expr? ')' stat      #forStat
     ;
 

@@ -1,7 +1,7 @@
 package AST;
 import utils.Position;
 abstract public class ASTNode {
-    private Position pos;
+    public Position pos;
     public ASTNode(Position p) {
         this.pos = p;
     }

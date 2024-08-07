@@ -1,14 +1,15 @@
 package AST.Expr;
 
+import AST.ASTNode;
 import AST.ASTVisitor;
 import utils.DataType;
 import utils.Position;
-
-// normal&format string
-public class cStrExprNode extends ExprNode{
+public class cFormatExpr extends ASTNode {
     public String value;
-    public cStrExprNode(Position p, DataType t, String val) {
-        super(p, t);
+    DataType type;
+    public cFormatExpr(Position pos, String val) {
+        super(pos);
+        type = new DataType("string");
         this.value = val.substring(1, val.length() - 1);
     }
     @Override
