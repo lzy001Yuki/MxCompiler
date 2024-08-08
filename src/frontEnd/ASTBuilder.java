@@ -4,19 +4,16 @@ import AST.Expr.ExprNode;
 import AST.Stat.*;
 import AST.Expr.*;
 import AST.ProgramNode;
-import org.antlr.v4.runtime.ParserRuleContext;
+import parser.MxParser.*;
+import parser.MxParser;
 import parser.MxParserBaseVisitor;
-import parser.MxParserParser;
-import parser.MxParserParser.*;
 import AST.ASTNode;
 import utils.DataType;
 import utils.Error;
 import utils.Position;
 
-import java.text.ParsePosition;
-
-public class ASTBuilder extends MxParserBaseVisitor<ASTNode>{
-    @Override public ASTNode visitProgram(MxParserParser.ProgramContext ctx) {
+public class ASTBuilder extends MxParserBaseVisitor<ASTNode> {
+    @Override public ASTNode visitProgram(MxParser.ProgramContext ctx) {
         Position pos = new Position(ctx);
         ProgramNode programNode = new ProgramNode(pos);
         if (ctx.mainDef() == null) throw new Error("SemanticError", "main function missed", pos);
@@ -35,7 +32,7 @@ public class ASTBuilder extends MxParserBaseVisitor<ASTNode>{
     }
 
     @Override
-    public ASTNode visitFuncDef(FuncDefContext ctx) {
+    public ASTNode visitFuncDef(MxParser.FuncDefContext ctx) {
         Position pos = new Position(ctx);
         funcDefNode funcDef = new funcDefNode(pos, ctx.Identifier().getText());
         funcDef.returnType = new DataType(ctx.returnType());
@@ -45,7 +42,7 @@ public class ASTBuilder extends MxParserBaseVisitor<ASTNode>{
     }
 
     @Override
-    public ASTNode visitPara(ParaContext ctx) {
+    public ASTNode visitPara(MxParser.ParaContext ctx) {
         Position pos = new Position(ctx);
         paraListNode para = new paraListNode(pos);
         for (int i = 0; i < ctx.Identifier().size(); i++) {
@@ -55,14 +52,14 @@ public class ASTBuilder extends MxParserBaseVisitor<ASTNode>{
     }
 
     @Override
-    public ASTNode visitMainDef(MxParserParser.MainDefContext ctx) {
+    public ASTNode visitMainDef(MxParser.MainDefContext ctx) {
         Position pos = new Position(ctx);
         mainDefNode mainDef = new mainDefNode(pos);
         mainDef.blockStat = (blockStatNode) visitBlock(ctx.block());
         return mainDef;
     }
     @Override
-    public ASTNode visitBlock(MxParserParser.BlockContext ctx) {
+    public ASTNode visitBlock(MxParser.BlockContext ctx) {
         Position pos = new Position(ctx);
         blockStatNode blockStat = new blockStatNode(pos);
         for (var it: ctx.stat()) {
@@ -72,26 +69,26 @@ public class ASTBuilder extends MxParserBaseVisitor<ASTNode>{
         return blockStat;
     }
     @Override
-    public ASTNode visitBlockStat(MxParserParser.BlockStatContext ctx) {
+    public ASTNode visitBlockStat(MxParser.BlockStatContext ctx) {
         return visitBlock(ctx.block());
     }
 
     @Override
-    public ASTNode visitVarStat(MxParserParser.VarStatContext ctx) {
+    public ASTNode visitVarStat(MxParser.VarStatContext ctx) {
         Position pos = new Position(ctx);
         varStatNode varStat = new varStatNode(pos);
         varStat.varDef = (varDefNode) visitVarDef(ctx.varDef());
         return varStat;
     }
     @Override
-    public ASTNode visitReturnStat(MxParserParser.ReturnStatContext ctx) {
+    public ASTNode visitReturnStat(MxParser.ReturnStatContext ctx) {
         Position pos = new Position(ctx);
         returnStatNode returnStat = new returnStatNode(pos);
         returnStat.exprNode = (ExprNode) visit(ctx.expr());
         return returnStat;
     }
     @Override
-    public ASTNode visitBreakStat(MxParserParser.BreakStatContext ctx) {
+    public ASTNode visitBreakStat(MxParser.BreakStatContext ctx) {
         Position pos = new Position(ctx);
         return new breakStatNode(pos);
     }
@@ -109,7 +106,7 @@ public class ASTBuilder extends MxParserBaseVisitor<ASTNode>{
         return exprStat;
     }
     @Override
-    public ASTNode visitNoneStat(NoneStatContext ctx) {
+    public ASTNode visitNoneStat(MxParser.NoneStatContext ctx) {
         Position pos = new Position(ctx);
         exprStatNode exprStat = new exprStatNode(pos);
         exprStat.exprNode = null;
@@ -217,21 +214,21 @@ public class ASTBuilder extends MxParserBaseVisitor<ASTNode>{
     @Override
     public ASTNode visitUnaryExpr(UnaryExprContext ctx) {
         Position pos = new Position(ctx);
-        unaryExprNode unaryExpr = new unaryExprNode(pos, ctx.op.getText());
+        unaryExprNode unaryExpr = new unaryExprNode(pos, ctx.op.getText(), false);
         unaryExpr.exprNode = (ExprNode) visit(ctx.expr());
         return unaryExpr;
     }
     @Override
     public ASTNode visitPostfixExpr(PostfixExprContext ctx) {
         Position pos = new Position(ctx);
-        unaryExprNode unaryExpr = new unaryExprNode(pos, ctx.op.getText());
+        unaryExprNode unaryExpr = new unaryExprNode(pos, ctx.op.getText(), false);
         unaryExpr.exprNode = (ExprNode) visit(ctx.expr());
         return unaryExpr;
     }
     @Override
     public ASTNode visitPrefixExpr(PrefixExprContext ctx) {
         Position pos = new Position(ctx);
-        unaryExprNode unaryExpr = new unaryExprNode(pos, ctx.op.getText());
+        unaryExprNode unaryExpr = new unaryExprNode(pos, ctx.op.getText(), true);
         unaryExpr.exprNode = (ExprNode) visit(ctx.expr());
         return unaryExpr;
     }
@@ -269,7 +266,7 @@ public class ASTBuilder extends MxParserBaseVisitor<ASTNode>{
         return ternaryExpr;
     }
     @Override
-    public ASTNode visitBasicExpr(BasicExprContext ctx) {
+    public ASTNode visitBasicExpr(MxParser.BasicExprContext ctx) {
         Position pos = new Position(ctx);
         basicExprNode basicExprNode = new basicExprNode(pos);
         basicExprNode.exprNode = (ExprNode) visit(ctx.expr());
@@ -320,7 +317,6 @@ public class ASTBuilder extends MxParserBaseVisitor<ASTNode>{
         else if (ctx.String() != null) varExpr.type = new DataType("string");
         else if (ctx.Identifier() != null) {
             varExpr.type = new DataType(ctx.Identifier().getText());
-            varExpr.type.isClass = true;
         }
         return varExpr;
     }
@@ -350,6 +346,19 @@ public class ASTBuilder extends MxParserBaseVisitor<ASTNode>{
             initArrayExpr.list.add((ExprNode) visit(init));
         }
         // should fix problem :arraySize in initArrayExpr
+        // member type is not created
+        //initArrayExpr.type.arrayDim++;
+        //while (initArrayExpr.list.getFirst() instanceof initArrayExprNode) initArrayExpr.type.arrayDim++;
+        //checkDim(1, initArrayExpr.type.arrayDim, initArrayExpr, pos);
         return initArrayExpr;
+    }
+    public void checkDim(int dim, int standard, initArrayExprNode node, Position pos) {
+        for (var it: node.list) {
+            if (! (it instanceof  initArrayExprNode)) {
+                if (dim != standard) throw new Error("SemanticError", "initialization of array has wrong dimension", pos);
+                continue;
+            }
+            checkDim(dim + 1, standard, (initArrayExprNode) it, pos);
+        }
     }
 }

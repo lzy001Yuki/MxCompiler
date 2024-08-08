@@ -10,7 +10,6 @@ public class initArrayExprNode extends ExprNode{
     public initArrayExprNode(Position pos) {
         super(pos);
         list = new ArrayList<>();
-        type.isArray = true;
     }
     @Override
     public void accept(ASTVisitor visitor) {

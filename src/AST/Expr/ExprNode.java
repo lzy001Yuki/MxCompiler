@@ -4,6 +4,7 @@ import utils.Position;
 import utils.DataType;
 public abstract class ExprNode extends ASTNode{
     public DataType type;
+    public boolean isLeftValue;
     ExprNode(Position p) {
         super(p);
     }

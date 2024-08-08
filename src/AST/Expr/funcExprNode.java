@@ -10,7 +10,6 @@ public class funcExprNode extends ExprNode{
     public funcExprNode(Position p) {
         super(p);
         paraList = new ArrayList<>();
-        type.isFunc = true;
     }
     @Override
     public void accept(ASTVisitor visitor) {

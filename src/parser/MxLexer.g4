@@ -18,6 +18,10 @@ Break : 'break';
 Continue : 'continue';
 Return : 'return';
 
+Head : 'f"' FormatStr '$';
+Middle : '$' FormatStr '$';
+Tail : '$' FormatStr Quote;
+
 Identifier:[A-Za-z][A-Za-z0-9_]*;
 Add:'+';
 Sub:'-';

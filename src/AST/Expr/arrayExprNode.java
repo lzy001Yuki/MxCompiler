@@ -1,6 +1,7 @@
 package AST.Expr;
 
 import AST.ASTVisitor;
+import utils.DataType;
 import utils.Position;
 
 import java.util.ArrayList;
@@ -9,8 +10,7 @@ public class arrayExprNode extends ExprNode{
     public initArrayExprNode iniList = null;
     public arrayExprNode(Position p) {
         super(p);
-        indexList = new ArrayList<>();
-        type.isArray = true;
+        this.indexList = new ArrayList<>();
     }
     @Override
     public void accept(ASTVisitor visitor) {

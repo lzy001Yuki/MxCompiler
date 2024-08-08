@@ -1,15 +1,30 @@
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
-public class Main {
-    public static void main(String[] args) {
-        //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-        // to see how IntelliJ IDEA suggests fixing it.
-        System.out.printf("Hello and welcome!\n");
+import java.io.FileInputStream;
+import java.io.InputStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+import utils.Error;
+import AST.ProgramNode;
+import frontEnd.*;
+import parser.MxParser;
+import parser.MxLexer;
+import utils.MxErrorListener;
 
-        for (int i = 1; i <= 5; i++) {
-            //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-            // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-            System.out.println("i = " + i);
+public class Main {
+    public static void main(String[] args) throws Exception {
+        String name = "test.txt";
+        InputStream input = new FileInputStream(name);
+        try{
+            MxLexer lexer = new MxLexer(CharStreams.fromStream(input));
+            lexer.removeErrorListeners();
+            lexer.addErrorListener(new MxErrorListener());
+            MxParser parser = new MxParser(new CommonTokenStream(lexer));
+            parser.removeErrorListeners();
+            parser.addErrorListener(new MxErrorListener());
+            MxParser.ProgramContext parseTreeRoot = parser.program();
+            ASTBuilder builder = new ASTBuilder();
+            ProgramNode root = (ProgramNode) builder.visit(parseTreeRoot);
+        } catch (Error err) {
+            throw new RuntimeException();
         }
     }
 }

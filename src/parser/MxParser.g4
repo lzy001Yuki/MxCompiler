@@ -1,6 +1,5 @@
-grammar MxParser;
-import MxLexer;
-@header {package parser;}
+parser grammar MxParser;
+options { tokenVocab = MxLexer; }
 program: (funcDef | classDef |varDef )* mainDef (funcDef | classDef |varDef )* EOF;
 
 funcDef : returnType Identifier  '(' para? ')' block;
@@ -43,10 +42,7 @@ varDefAtom : Identifier (Assign expr)?;
 varDef : typename varDefAtom (Comma varDefAtom)* ';';
 
 
-head : 'f"' FormatStr '$';
-middle : '$' FormatStr '$';
-tail : '$' FormatStr Quote;
-stringFormat : Format1 | (head expr? (middle expr?)* tail);
+stringFormat : Format1 | (Head expr? (Middle expr?)* Tail);
 
 block : '{' stat* '}';
 
