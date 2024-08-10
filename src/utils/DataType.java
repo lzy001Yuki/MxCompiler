@@ -71,9 +71,8 @@ public class DataType {
         if (isMain != other.isMain) return false;
         if (arrayDim != other.arrayDim) return false;
         if (isFunc != other.isFunc) return false;
-        if (!typeName.equals(other.typeName)) {
-            if ((isNull && ((DataType) obj).checkBaseType()) || (checkBaseType() && ((DataType) obj).isNull)) return false;
-        }
+        if ((isNull && !((DataType) obj).checkBaseType()) || (!checkBaseType() && ((DataType) obj).isNull)) return true;
+        if (!typeName.equals(other.typeName)) return false;
         return true;
     }
 }

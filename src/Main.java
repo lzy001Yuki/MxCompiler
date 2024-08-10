@@ -13,9 +13,9 @@ import utils.Scope.GlobalScope;
 // fail: misc condition.mx??
 public class Main {
     public static void main(String[] args) throws Exception {
-        String name = "testcases/sema/misc-package/misc-33.mx";
+        //String name = "testcases/sema/scope-package/scope-8.mx";
         //String name = "testcases/sema/bool-compare.mx";
-        //String name = "test.txt";
+        String name = "test.txt";
         InputStream input = new FileInputStream(name);
         try{
             GlobalScope globalScope = new GlobalScope();
