@@ -9,7 +9,7 @@ public class DataType {
     public String typeName = null; // int/bool/string/className/void(returnType)/funcName/formatString
     public DataType(){}
     public DataType(String name, boolean isc, boolean isf, boolean isa, boolean isn, boolean ist, boolean ism, int dim) {
-        this.typeName = name;
+        this.typeName = name.replace("[", "").replace("]","");;
         this.isClass = isc;
         this.isFunc = isf;
         this.isArray = isa;
@@ -19,7 +19,7 @@ public class DataType {
         this.isMain = ism;
     }
     public DataType(String name) {
-        this.typeName = name;
+        this.typeName = name.replace("[", "").replace("]","");;
     }
     public DataType(DataType t) {
         this.typeName = t.typeName;
@@ -37,7 +37,7 @@ public class DataType {
         if (ctx.Void() != null) {
             this.typeName = "void";
         } else {
-            this.typeName = ctx.getText();
+            this.typeName = ctx.getText().replace("[", "").replace("]","");;
             if (ctx.typename().Identifier() != null) this.isClass = true;
             if (!ctx.typename().LBracket().isEmpty()) {
                 this.isArray = true;
@@ -47,11 +47,20 @@ public class DataType {
     }
     public DataType(MxParser.TypenameContext ctx) {
         this.typeName = ctx.getText();
+        this.typeName = this.typeName.replace("[", "").replace("]","");
+
         if (ctx.Identifier() != null) this.isClass = true;
         if (!ctx.LBracket().isEmpty()) {
             this.isArray = true;
         }
         this.arrayDim = ctx.LBracket().size();
+    }
+    public boolean checkBaseType() {
+        if (typeName == null) return false;
+        if (typeName.equals("int") || typeName.equals("bool") || typeName.equals("string")) {
+            if (!isArray) return true;
+        }
+        return false;
     }
     @Override
     public boolean equals(Object obj) {
@@ -59,13 +68,12 @@ public class DataType {
         if (obj == null || getClass() != obj.getClass()) return false;
         DataType other = (DataType) obj;
         if (isArray != other.isArray) return false;
-        if (isNull != other.isNull) return false;
-        if (isThis != other.isThis) return false;
-        if (isClass != other.isClass) return false;
         if (isMain != other.isMain) return false;
         if (arrayDim != other.arrayDim) return false;
         if (isFunc != other.isFunc) return false;
-        if (!typeName.equals(other.typeName)) return false;
+        if (!typeName.equals(other.typeName)) {
+            if ((isNull && ((DataType) obj).checkBaseType()) || (checkBaseType() && ((DataType) obj).isNull)) return false;
+        }
         return true;
     }
 }

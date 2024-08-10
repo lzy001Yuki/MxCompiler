@@ -56,6 +56,8 @@ public class GlobalScope extends Scope {
         para7.add(new paraDef(new DataType("int"), "i"));
         funcDefNode toString = new funcDefNode(null, "toString", new DataType("string"), para7);
         funcMember.put(toString.funcName, toString);
+        funcDefNode size = new funcDefNode(null, "size", new DataType("int"), null);
+        funcMember.put(size.funcName, size);
     }
     public void addFunc(funcDefNode def) {
         if (funcMember.containsKey(def.funcName)) throw new Error("SemanticError", "function name " + def.funcName + " redefined", def.pos);

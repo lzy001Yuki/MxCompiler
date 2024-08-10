@@ -15,6 +15,7 @@ public class funcDefNode extends defNode{
     public funcDefNode(Position p, String str) {
         super(p);
         this.funcName = str;
+        para = new paraListNode(pos);
     }
     public funcDefNode(Position p, String str, DataType rt, ArrayList<paraDef> def) {
         super(p);

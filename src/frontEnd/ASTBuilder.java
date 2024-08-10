@@ -4,6 +4,7 @@ import AST.Expr.ExprNode;
 import AST.Stat.*;
 import AST.Expr.*;
 import AST.ProgramNode;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import parser.MxParser.*;
 import parser.MxParser;
 import parser.MxParserBaseVisitor;
@@ -17,16 +18,8 @@ public class ASTBuilder extends MxParserBaseVisitor<ASTNode> {
         Position pos = new Position(ctx);
         ProgramNode programNode = new ProgramNode(pos);
         if (ctx.mainDef() == null) throw new Error("SemanticError", "main function missed", pos);
-        programNode.definition.add((defNode) visitMainDef(ctx.mainDef()));
-        for (var def: ctx.classDef()) {
-            programNode.definition.add((defNode) visitClassDef(def));
-        }
-        for (var def: ctx.funcDef()) {
-            programNode.definition.add((defNode) visitFuncDef(def));
-        }
-        for (var def: ctx.varDef()) {
-            varStatNode vsn = (varStatNode) visitVarDef(def);
-            programNode.definition.add(vsn.varDef);
+        for (var child: ctx.children) {
+            if (!(child instanceof TerminalNode)) programNode.definition.add((defNode) visit(child));
         }
         return programNode;
     }
@@ -36,8 +29,8 @@ public class ASTBuilder extends MxParserBaseVisitor<ASTNode> {
         Position pos = new Position(ctx);
         funcDefNode funcDef = new funcDefNode(pos, ctx.Identifier().getText());
         funcDef.returnType = new DataType(ctx.returnType());
-        funcDef.para = (paraListNode) visitPara(ctx.para());
-        funcDef.funcBlock = (blockStatNode) visitBlock(ctx.block());
+        if (ctx.para() != null) funcDef.para = (paraListNode) visitPara(ctx.para());
+        if (ctx.block() != null) funcDef.funcBlock = (blockStatNode) visitBlock(ctx.block());
         return funcDef;
     }
 
@@ -84,7 +77,7 @@ public class ASTBuilder extends MxParserBaseVisitor<ASTNode> {
     public ASTNode visitReturnStat(MxParser.ReturnStatContext ctx) {
         Position pos = new Position(ctx);
         returnStatNode returnStat = new returnStatNode(pos);
-        returnStat.exprNode = (ExprNode) visit(ctx.expr());
+        if (ctx.expr() != null)  returnStat.exprNode = (ExprNode) visit(ctx.expr());
         return returnStat;
     }
     @Override
@@ -118,7 +111,7 @@ public class ASTBuilder extends MxParserBaseVisitor<ASTNode> {
         ifStatNode ifStat = new ifStatNode(pos);
         ifStat.conExpr = (ExprNode) visit(ctx.expr());
         ifStat.ifStat = (statNode) visit(ctx.ifStat);
-        ifStat.elseStat = (statNode) visit(ctx.elseStat);
+        if (ctx.elseStat != null)  ifStat.elseStat = (statNode) visit(ctx.elseStat);
         return ifStat;
     }
     @Override
@@ -173,7 +166,7 @@ public class ASTBuilder extends MxParserBaseVisitor<ASTNode> {
     public ASTNode visitVarDefAtom(VarDefAtomContext ctx) {
         Position pos = new Position(ctx);
         varDefAtomNode varAtom = new varDefAtomNode(pos, ctx.Identifier().getText());
-        varAtom.assignNode = (ExprNode) visit(ctx.expr());
+        if (ctx.expr() != null)  varAtom.assignNode = (ExprNode) visit(ctx.expr());
         return varAtom;
     }
     @Override
@@ -199,7 +192,8 @@ public class ASTBuilder extends MxParserBaseVisitor<ASTNode> {
         } else if (ctx.atom().True() != null) {
             atomExpr.boolExpr = new cBoolExpr(true);
         } else if (ctx.atom().Integer() != null) {
-            atomExpr.intExpr = new cIntExpr(Integer.parseInt(ctx.atom().Integer().getText()));
+            if (ctx.atom().Integer().getText().compareTo("214783647") < 0) atomExpr.intExpr = new cIntExpr(ctx.atom().Integer().getText());
+            else atomExpr.intExpr = new cIntExpr(Integer.parseInt(ctx.atom().Integer().getText()));
         } else if (ctx.atom().Null() != null) {
             atomExpr.nullExpr = new cNullExpr();
         } else if (ctx.atom().This() != null) {
@@ -334,8 +328,14 @@ public class ASTBuilder extends MxParserBaseVisitor<ASTNode> {
         for (var index: ctx.expr()) {
             arrayExpr.indexList.add((ExprNode) visit(index));
         }
+        for (int i = 0; i < arrayExpr.indexList.size(); i++) {
+            int lbIndex = ctx.LBracket(i).getSymbol().getTokenIndex();
+            int rbIndex = ctx.RBracket(i).getSymbol().getTokenIndex();
+            if (rbIndex == lbIndex + 1) throw new Error("SemanticError", "the shape of multidimensional array must be specified from left to right", pos);
+        }
         if (ctx.initArray() != null) arrayExpr.iniList = (initArrayExprNode) visitInitArray(ctx.initArray());
         arrayExpr.type.arrayDim = ctx.LBracket().size();
+        arrayExpr.type.isArray = true;
         return arrayExpr;
     }
     @Override
