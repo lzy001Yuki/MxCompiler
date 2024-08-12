@@ -37,11 +37,12 @@ public class Scope {
     }
 
     public funcDefNode findFuncGlobally(String name) {
+        if (this.members.containsKey(name)) return null;
         if (this instanceof ClassScope) {
             if (((ClassScope) this).funcMember.containsKey(name)) return ((ClassScope) this).funcMember.get(name);
         } else if (this instanceof GlobalScope) {
             if (((GlobalScope) this).funcMember.containsKey(name)) return ((GlobalScope) this).funcMember.get(name);
-        } else if (this.members.containsKey(name)) return null;
+        }
         if (parentScope == null) return null;
         else return parentScope.findFuncGlobally(name);
     }

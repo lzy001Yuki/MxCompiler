@@ -459,7 +459,7 @@ public class SemanticChecker implements ASTVisitor {
     public void visit(varDefAtomNode it) {
         if (it.type.isClass && !globalScope.classMember.containsKey(it.type.typeName))
             throw new Error("SemanticError", "Undefined Identifier", it.pos);
-        if (globalScope.funcMember.containsKey(it.varName))
+        if (globalScope.funcMember.containsKey(it.varName) && !it.varName.equals("size") && !it.varName.equals("length"))
             throw new Error("SemanticError", "Multiple Definitions", it.pos);
         if (currentScope.members.containsKey(it.varName)) throw new Error("SemanticError", "Multiple Definitions", it.pos);
         if (it.assignNode != null) {
