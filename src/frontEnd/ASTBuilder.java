@@ -150,15 +150,13 @@ public class ASTBuilder extends MxParserBaseVisitor<ASTNode> {
         if (ctx.constructor().isEmpty()) classDef.constructor = null;
         else classDef.constructor = (constructNode) visitConstructor(ctx.constructor(0));
         for (var funcDef: ctx.funcDef()) {
-            if (classDef.funcMap.containsKey(funcDef.Identifier().getText())) throw new Error("SemanticError", "function name "
-                    + funcDef.Identifier().getText() + " in class " + ctx.Identifier().getText() + " duplicated", pos);
+            if (classDef.funcMap.containsKey(funcDef.Identifier().getText())) throw new Error("SemanticError", "Multiple Definitions", pos);
             classDef.funcMap.put(funcDef.Identifier().getText(), (funcDefNode) visitFuncDef(funcDef));
         }
         for (var varDef: ctx.varDef()) {
             varDefNode def = (varDefNode) visitVarDef(varDef);
             for (var member: def.varList) {
-                if (classDef.varMap.containsKey(member.varName)) throw new Error("SemanticError", "variable name "
-                + member.varName + " in class " + ctx.Identifier().getText() + " duplicated", pos);
+                if (classDef.varMap.containsKey(member.varName)) throw new Error("SemanticError", "Multiple Definitions", pos);
                 classDef.varMap.put(member.varName, member);
             }
         }

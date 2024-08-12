@@ -13,6 +13,6 @@ public class FuncScope extends Scope {
     public void checkReturn(DataType rt, Position pos) {
         if (rt.isThis && returnType.typeName.equals(rt.typeName)) return;
         if (!returnType.checkBaseType() && rt.isNull) return;
-        if (!returnType.equals(rt)) throw new Error("SemanticError", "function has wrong return type", pos);
+        if (!returnType.equals(rt)) throw new Error("SemanticError", "Type Mismatch", pos);
     }
 }

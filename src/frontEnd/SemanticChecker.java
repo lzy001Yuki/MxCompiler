@@ -106,28 +106,28 @@ public class SemanticChecker implements ASTVisitor {
             if (it.opStr.equals("==") || it.opStr.equals("!=") || it.opStr.equals(">") || it.opStr.equals("<") || it.opStr.equals(">=") || it.opStr.equals("<=")) {
                 it.type = new DataType("bool");
             } else if (it.opStr.equals("+")) {
-                if (it.lhs.type.isArray || it.rhs.type.isArray) throw new Error("SemanticError", "array doesn't support +", it.pos);
+                if (it.lhs.type.isArray || it.rhs.type.isArray) throw new Error("SemanticError", "Type Mismatch", it.pos);
                 it.type = new DataType("string");
-            } else throw new Error("SemanticError", "invalid binary operation on string type", it.pos);
+            } else throw new Error("SemanticError", "Type Mismatch", it.pos);
             it.isLeftValue = false;
             return;
         }
         if ((it.lhs.type.isArray && it.rhs.type.isArray)) {
             if (it.opStr.equals("==") || it.opStr.equals("!=") || it.opStr.equals(">") || it.opStr.equals("<") || it.opStr.equals(">=") || it.opStr.equals("<=")) {
                 it.type = new DataType("bool");
-            } else throw new Error("SemanticError", "array doesn't support " + it.opStr, it.pos);
+            } else throw new Error("SemanticError", "Type Mismatch", it.pos);
             it.isLeftValue = false;
             return;
         }
         if ((it.lhs.type.isNull || it.rhs.type.isNull) || (it.lhs.type.isThis && it.rhs.type.isThis)) {
             if (it.opStr.equals("==") || it.opStr.equals("!=")) {
                 it.type = new DataType("bool");
-            } else throw new Error("SemanticError", "invalid binary operation on null/this type", it.pos);
+            } else throw new Error("SemanticError", "Type Mismatch", it.pos);
             return;
         }
         if (!it.lhs.type.equals(it.rhs.type)) throw new Error("SemanticError", "Type Mismatch", it.pos);
         if (it.lhs.type.isClass && it.rhs.type.isClass) {
-            if (!it.opStr.equals("==") && !it.opStr.equals("!="))  throw new Error("SemanticError", "invalid binary operation on class type", it.pos);
+            if (!it.opStr.equals("==") && !it.opStr.equals("!="))  throw new Error("SemanticError", "Type Mismatch", it.pos);
             it.type = new DataType("bool");
             it.isLeftValue = false;
             return;
@@ -137,11 +137,11 @@ public class SemanticChecker implements ASTVisitor {
                 it.type = new DataType("bool");
             } else if (it.opStr.equals("+") || it.opStr.equals("-") || it.opStr.equals("*") || it.opStr.equals("/") || it.opStr.equals("%") || it.opStr.equals("<<") || it.opStr.equals(">>") || it.opStr.equals("|") || it.opStr.equals("^") || it.opStr.equals("&")) {
                 it.type = new DataType("int");
-            } else throw new Error("SemanticError", "invalid binary operation on int type", it.pos);
+            } else throw new Error("SemanticError", "Type Mismatch", it.pos);
         } else if (it.lhs.type.typeName.equals("bool")) {
             if (it.opStr.equals("==") || it.opStr.equals("!=") || it.opStr.equals("&&") || it.opStr.equals("||")) {
                 it.type = new DataType("bool");
-            } else throw new Error("SemanticError", "invalid binary operation on bool type", it.pos);
+            } else throw new Error("SemanticError", "Type Mismatch", it.pos);
         }
     }
     @Override
@@ -177,7 +177,7 @@ public class SemanticChecker implements ASTVisitor {
             i.accept(this);
             dim--;
             if (!i.type.typeName.equals("int") || i.type.isArray) throw new Error("SemanticError", "Invalid Type", it.pos);
-            if (dim < 0) throw new Error("SemanticError", "Dimension out of bound", it.pos);
+            if (dim < 0) throw new Error("SemanticError", "Dimension Out Of Bound", it.pos);
         }
         it.type = new DataType(it.exprNode.type);
         it.type.arrayDim = dim;
@@ -408,7 +408,7 @@ public class SemanticChecker implements ASTVisitor {
         }
         if (currentScope instanceof ClassScope) ((ClassScope) currentScope).funcMember = it.funcMap;
         for (var funcDef: it.funcMap.values()) {
-            if (funcDef.funcName.equals(it.className)) throw new Error("SemanticError", "Multiple Definitions " + it.className + " has the same name with a function", it.pos);
+            if (funcDef.funcName.equals(it.className)) throw new Error("SemanticError", "Multiple Definitions", it.pos);
             funcDef.accept(this);
         }
         if (it.constructor != null) {

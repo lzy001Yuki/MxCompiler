@@ -67,7 +67,7 @@ public class SymbolCollector implements ASTVisitor {
     @Override
     public void visit(classDefNode it) {
         if (this.globalScope.funcMember.containsKey(it.className))
-            throw new Error("SemanticError", it.className + "duplicate with function name", it.pos);
+            throw new Error("SemanticError", "Multiple Definitions", it.pos);
         this.globalScope.addClass(it);
     }
     @Override
@@ -75,7 +75,7 @@ public class SymbolCollector implements ASTVisitor {
     @Override
     public void visit(funcDefNode it) {
         if (this.globalScope.classMember.containsKey(it.funcName))
-            throw new Error("SemanticError", it.funcName + " duplicate with class name", it.pos);
+            throw new Error("SemanticError", "Multiple Definitions", it.pos);
         this.globalScope.addFunc(it);
     }
     @Override
