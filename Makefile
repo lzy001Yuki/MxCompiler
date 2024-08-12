@@ -1,15 +1,19 @@
-# Change the src to the path of your java source files
-JAVA_SRC = $(shell find src -name '*.java')
-# Change this to the path of your antlr jar
-ANTLR_JAR = /ulib/antlr-4.13.1-complete.jar
+.PHONY: build
+build:
+	find -name '*.java' | xargs javac -d bin -cp /ulib/antlr-4.13.1-complete.jar
 
-.PHONY: all
-all: Main
+.PHONY: run
+run:
+	cd bin && java -cp /ulib/antlr-4.13.1-complete.jar:. MxCompiler
 
-.PHONY: Main
-Main: $(JAVA_SRC)
-	javac -d bin $(JAVA_SRC) -cp $(ANTLR_JAR)
+.PHONY: compile
+compile:
+	find -name '*.java' | xargs javac -d bin -cp ulib/antlr-4.13.1-complete.jar
 
-.PHONY: clean
-clean:
-	find bin -name '*.class' -or -name '*.jar' | xargs rm -f
+.PHONY: test
+test:
+	@cd bin && java -cp ../ulib/antlr-4.13.1-complete.jar:. MxCompiler
+
+.PHONY: visit
+visit:
+	java -cp ulib/antlr-4.13.1-complete.jar org.antlr.v4.Tool $* -no-listener -visitor MxParser.g4
