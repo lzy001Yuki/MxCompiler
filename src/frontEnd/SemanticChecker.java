@@ -106,28 +106,28 @@ public class SemanticChecker implements ASTVisitor {
             if (it.opStr.equals("==") || it.opStr.equals("!=") || it.opStr.equals(">") || it.opStr.equals("<") || it.opStr.equals(">=") || it.opStr.equals("<=")) {
                 it.type = new DataType("bool");
             } else if (it.opStr.equals("+")) {
-                if (it.lhs.type.isArray || it.rhs.type.isArray) throw new Error("SemanticError", "Type Mismatch", it.pos);
+                if (it.lhs.type.isArray || it.rhs.type.isArray) throw new Error("SemanticError", "Invalid Type", it.pos);
                 it.type = new DataType("string");
-            } else throw new Error("SemanticError", "Type Mismatch", it.pos);
+            } else throw new Error("SemanticError", "Invalid Type", it.pos);
             it.isLeftValue = false;
             return;
         }
         if ((it.lhs.type.isArray && it.rhs.type.isArray)) {
             if (it.opStr.equals("==") || it.opStr.equals("!=") || it.opStr.equals(">") || it.opStr.equals("<") || it.opStr.equals(">=") || it.opStr.equals("<=")) {
                 it.type = new DataType("bool");
-            } else throw new Error("SemanticError", "Type Mismatch", it.pos);
+            } else throw new Error("SemanticError", "Invalid Type", it.pos);
             it.isLeftValue = false;
             return;
         }
         if ((it.lhs.type.isNull || it.rhs.type.isNull) || (it.lhs.type.isThis && it.rhs.type.isThis)) {
             if (it.opStr.equals("==") || it.opStr.equals("!=")) {
                 it.type = new DataType("bool");
-            } else throw new Error("SemanticError", "Type Mismatch", it.pos);
+            } else throw new Error("SemanticError", "Invalid Type", it.pos);
             return;
         }
-        if (!it.lhs.type.equals(it.rhs.type)) throw new Error("SemanticError", "Type Mismatch", it.pos);
+        if (!it.lhs.type.equals(it.rhs.type)) throw new Error("SemanticError", "Invalid Type", it.pos);
         if (it.lhs.type.isClass && it.rhs.type.isClass) {
-            if (!it.opStr.equals("==") && !it.opStr.equals("!="))  throw new Error("SemanticError", "Type Mismatch", it.pos);
+            if (!it.opStr.equals("==") && !it.opStr.equals("!="))  throw new Error("SemanticError", "Invalid Type", it.pos);
             it.type = new DataType("bool");
             it.isLeftValue = false;
             return;
@@ -137,11 +137,11 @@ public class SemanticChecker implements ASTVisitor {
                 it.type = new DataType("bool");
             } else if (it.opStr.equals("+") || it.opStr.equals("-") || it.opStr.equals("*") || it.opStr.equals("/") || it.opStr.equals("%") || it.opStr.equals("<<") || it.opStr.equals(">>") || it.opStr.equals("|") || it.opStr.equals("^") || it.opStr.equals("&")) {
                 it.type = new DataType("int");
-            } else throw new Error("SemanticError", "Type Mismatch", it.pos);
+            } else throw new Error("SemanticError", "Invalid Type", it.pos);
         } else if (it.lhs.type.typeName.equals("bool")) {
             if (it.opStr.equals("==") || it.opStr.equals("!=") || it.opStr.equals("&&") || it.opStr.equals("||")) {
                 it.type = new DataType("bool");
-            } else throw new Error("SemanticError", "Type Mismatch", it.pos);
+            } else throw new Error("SemanticError", "Invalid Type", it.pos);
         }
     }
     @Override
