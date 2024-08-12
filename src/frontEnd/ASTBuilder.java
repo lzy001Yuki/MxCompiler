@@ -13,6 +13,8 @@ import utils.DataType;
 import utils.Error;
 import utils.Position;
 
+import java.math.BigInteger;
+
 public class ASTBuilder extends MxParserBaseVisitor<ASTNode> {
     @Override public ASTNode visitProgram(MxParser.ProgramContext ctx) {
         Position pos = new Position(ctx);
@@ -192,7 +194,9 @@ public class ASTBuilder extends MxParserBaseVisitor<ASTNode> {
         } else if (ctx.atom().True() != null) {
             atomExpr.boolExpr = new cBoolExpr(true);
         } else if (ctx.atom().Integer() != null) {
-            if (ctx.atom().Integer().getText().compareTo("214783647") < 0) atomExpr.intExpr = new cIntExpr(ctx.atom().Integer().getText());
+            BigInteger val1 = new BigInteger(ctx.atom().Integer().getText());
+            BigInteger val2 = new BigInteger("214783647");
+            if (val1.compareTo(val2) > 0) atomExpr.intExpr = new cIntExpr(ctx.atom().Integer().getText());
             else atomExpr.intExpr = new cIntExpr(Integer.parseInt(ctx.atom().Integer().getText()));
         } else if (ctx.atom().Null() != null) {
             atomExpr.nullExpr = new cNullExpr();
@@ -204,6 +208,18 @@ public class ASTBuilder extends MxParserBaseVisitor<ASTNode> {
             atomExpr.formatExpr = (cFormatExpr) visitStringFormat(ctx.atom().stringFormat());
         }
         return atomExpr;
+    }
+    @Override
+    public ASTNode visitStringFormat(StringFormatContext ctx) {
+        Position pos = new Position(ctx);
+        cFormatExpr formatString;
+        if (ctx.Head() != null)  formatString = new cFormatExpr(pos, ctx.getText(), false);
+        else formatString = new cFormatExpr(pos, ctx.getText(), true);
+        for (var def: ctx.expr()) {
+            ExprNode exprNode = (ExprNode) visit(def);
+            formatString.expr.add(exprNode);
+        }
+        return formatString;
     }
     @Override
     public ASTNode visitUnaryExpr(UnaryExprContext ctx) {

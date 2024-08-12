@@ -34,3 +34,4 @@ Compiler-Design-Implementation
 MxCompiler-2024.iml
 test.txt
 gen
+llvm.sh

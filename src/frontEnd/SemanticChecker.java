@@ -13,6 +13,7 @@ import utils.Scope.GlobalScope;
 import utils.Scope.Scope;
 import utils.Error;
 
+import java.math.BigInteger;
 import java.util.Map;
 
 public class SemanticChecker implements ASTVisitor {
@@ -145,6 +146,12 @@ public class SemanticChecker implements ASTVisitor {
     }
     @Override
     public void visit(cFormatExpr it) {
+        if (!it.formatType) {
+            for (var e: it.expr) {
+                e.accept(this);
+                if (!e.type.checkBaseType()) throw new Error("SemanticError", "Invalid Type for format string(should be base type)", it.pos);
+            }
+        }
         it.isLeftValue = false;
     }
     @Override
@@ -264,12 +271,16 @@ public class SemanticChecker implements ASTVisitor {
             if (it.exprNode instanceof atomExprNode && ((atomExprNode) it.exprNode).intExpr != null) {
                 if (it.opStr.equals("+")) {
                     if (((atomExprNode) it.exprNode).intExpr.valStr != null) {
-                        if (((atomExprNode) it.exprNode).intExpr.valStr.compareTo("214783647") > 0)
+                        BigInteger val1 = new BigInteger(((atomExprNode) it.exprNode).intExpr.valStr);
+                        BigInteger val2 = new BigInteger("214783647");
+                        if (val1.compareTo(val2) > 0)
                             throw new Error("SemanticError", "int field exceeded", it.pos);
                     }
                 } else {
                     if (((atomExprNode) it.exprNode).intExpr.valStr != null) {
-                        if (((atomExprNode) it.exprNode).intExpr.valStr.compareTo("214783648") > 0)
+                        BigInteger val1 = new BigInteger(((atomExprNode) it.exprNode).intExpr.valStr);
+                        BigInteger val2 = new BigInteger("214783648");
+                        if (val1.compareTo(val2) > 0)
                             throw new Error("SemanticError", "int field exceeded", it.pos);
                     }
                 }
