@@ -26,7 +26,7 @@ public class Scope {
     public Scope getParentScope() {return parentScope;}
 
     public void addVar(String name, Position pos, DataType type) {
-        if (members.containsKey(name)) throw new Error("SemanticError", "variable name " + name + " redefined", pos);
+        if (members.containsKey(name)) throw new Error("SemanticError", "Multiple Definitions", pos);
         members.put(name, type);
     }
 

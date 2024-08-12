@@ -14,6 +14,7 @@ public class Error extends RuntimeException {
 
     @Override
     public String toString() {
-        return errorType + " : " + msg + " at " + pos.toString();
+        //return errorType + " : " + msg + " at " + pos.toString();
+        return msg;
     }
 }

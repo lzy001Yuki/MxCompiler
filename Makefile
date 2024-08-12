@@ -4,15 +4,15 @@ build:
 
 .PHONY: run
 run:
-	cd bin && java -cp /ulib/antlr-4.13.1-complete.jar:. MxCompiler
+	cd bin && java -cp /ulib/antlr-4.13.1-complete.jar:. Main
 
-.PHONY: compile
-compile:
+.PHONY: main
+main:
 	find -name '*.java' | xargs javac -d bin -cp ulib/antlr-4.13.1-complete.jar
 
 .PHONY: test
 test:
-	@cd bin && java -cp ../ulib/antlr-4.13.1-complete.jar:. MxCompiler
+	@cd bin && java -cp ../ulib/antlr-4.13.1-complete.jar:. Main
 
 .PHONY: visit
 visit:

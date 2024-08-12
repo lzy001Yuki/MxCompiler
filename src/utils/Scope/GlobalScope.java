@@ -60,11 +60,11 @@ public class GlobalScope extends Scope {
         funcMember.put(size.funcName, size);
     }
     public void addFunc(funcDefNode def) {
-        if (funcMember.containsKey(def.funcName)) throw new Error("SemanticError", "function name " + def.funcName + " redefined", def.pos);
+        if (funcMember.containsKey(def.funcName)) throw new Error("SemanticError", "Multiple Definitions", def.pos);
         funcMember.put(def.funcName, def);
     }
     public void addClass(classDefNode def) {
-        if (classMember.containsKey(def.className)) throw new Error("SemanticError", "class name " + def.className + " redefined", def.pos);
+        if (classMember.containsKey(def.className)) throw new Error("SemanticError", "Multiple Definitions", def.pos);
         classMember.put(def.className, def);
     }
     public funcDefNode getFunc(String name) {

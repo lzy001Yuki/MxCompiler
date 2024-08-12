@@ -30,8 +30,8 @@ public class Main {
             SemanticChecker checker = new SemanticChecker(globalScope);
             checker.visit(root);
         } catch (Error error) {
-            System.err.println(error.toString());
-            throw new RuntimeException();
+            System.out.println(error.toString());
+            System.exit(1);
         }
         System.exit(0);
     }
