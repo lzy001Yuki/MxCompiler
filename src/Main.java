@@ -13,10 +13,7 @@ import utils.Scope.GlobalScope;
 // fail: misc condition.mx??
 public class Main {
     public static void main(String[] args) throws Exception {
-        //String name = "testcases/sema/loop-package/loop-1.mx";
-        //String name = "testcases/sema/bool-compare.mx";
-        String name = "test.txt";
-        InputStream input = new FileInputStream(name);
+        InputStream input = System.in;
         try{
             GlobalScope globalScope = new GlobalScope();
             MxLexer lexer = new MxLexer(CharStreams.fromStream(input));
@@ -34,7 +31,8 @@ public class Main {
             checker.visit(root);
         } catch (Error error) {
             System.err.println(error.toString());
-            //throw new RuntimeException();
+            throw new RuntimeException();
         }
+        System.exit(0);
     }
 }
