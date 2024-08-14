@@ -12,6 +12,7 @@ public class funcDefNode extends defNode{
     public blockStatNode funcBlock;
     public paraListNode para;
     public String funcName;
+    public String irName;
     public funcDefNode(Position p, String str) {
         super(p);
         this.funcName = str;

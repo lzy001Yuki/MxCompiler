@@ -345,7 +345,7 @@ public class ASTBuilder extends MxParserBaseVisitor<ASTNode> {
         for (int i = 0; i < arrayExpr.indexList.size(); i++) {
             int lbIndex = ctx.LBracket(i).getSymbol().getTokenIndex();
             int rbIndex = ctx.RBracket(i).getSymbol().getTokenIndex();
-            if (rbIndex == lbIndex + 1) throw new Error("SemanticError", "the shape of multidimensional array must be specified from left to right", pos);
+            if (rbIndex == lbIndex + 1) throw new Error("SemanticError", "the size of multidimensional array must be specified from left to right", pos);
         }
         if (ctx.initArray() != null) arrayExpr.iniList = (initArrayExprNode) visitInitArray(ctx.initArray());
         arrayExpr.type.arrayDim = ctx.LBracket().size();
@@ -359,20 +359,6 @@ public class ASTBuilder extends MxParserBaseVisitor<ASTNode> {
         for (var init: ctx.expr()) {
             initArrayExpr.list.add((ExprNode) visit(init));
         }
-        // should fix problem :arraySize in initArrayExpr
-        // member type is not created
-        //initArrayExpr.type.arrayDim++;
-        //while (initArrayExpr.list.getFirst() instanceof initArrayExprNode) initArrayExpr.type.arrayDim++;
-        //checkDim(1, initArrayExpr.type.arrayDim, initArrayExpr, pos);
         return initArrayExpr;
-    }
-    public void checkDim(int dim, int standard, initArrayExprNode node, Position pos) {
-        for (var it: node.list) {
-            if (! (it instanceof  initArrayExprNode)) {
-                if (dim != standard) throw new Error("SemanticError", "initialization of array has wrong dimension", pos);
-                continue;
-            }
-            checkDim(dim + 1, standard, (initArrayExprNode) it, pos);
-        }
     }
 }

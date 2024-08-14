@@ -1,13 +1,13 @@
-package MIR;
+package MIR.type;
 
-public class IRType {
+public abstract class IRType {
     public int bit_width = 0;
     public String typeName = null;
     public IRType(String str) {
         if (str.equals("void")) typeName = "void";
         else if (str.equals("ptr")) typeName = "ptr";
         else if (str.charAt(0) == 'i') {
-            typeName = "int";
+            typeName = "int"; //i1 refers to bool type
             bit_width = Integer.parseInt(str.substring(1));
         } else throw new RuntimeException("type for ir is wrong");
     }

@@ -410,6 +410,7 @@ public class SemanticChecker implements ASTVisitor {
         for (var funcDef: it.funcMap.values()) {
             if (funcDef.funcName.equals(it.className)) throw new Error("SemanticError", "Multiple Definitions", it.pos);
             funcDef.accept(this);
+            funcDef.irName = "@" + it.className + "." + funcDef.funcName;
         }
         if (it.constructor != null) {
             if (!it.constructor.className.equals(it.className))

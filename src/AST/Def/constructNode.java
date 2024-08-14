@@ -7,6 +7,7 @@ import utils.Position;
 
 public class constructNode extends ASTNode {
     public String className;
+    public String irName;
     public blockStatNode blockStat;
     public constructNode(Position p, String str) {
         super(p);
