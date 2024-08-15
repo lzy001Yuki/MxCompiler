@@ -9,4 +9,5 @@ public abstract class Entity {
         this.type = t;
         this.irName = str;
     }
+    public String getName(){return null;}
 }

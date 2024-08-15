@@ -16,4 +16,8 @@ public class constBool extends Entity {
         if (value)  return this.type.toString() + " 1";
         else return this.type.toString() + " 0";
     }
+    public String getName() {
+        if (value) return "" + 1;
+        else return "" + 0;
+    }
 }

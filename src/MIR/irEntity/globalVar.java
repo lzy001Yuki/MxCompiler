@@ -8,11 +8,19 @@ public class globalVar extends Entity{
         super(new ptrType(var.type), var.irName);
         init = i; // null / constVar
     }
-    @Override
-    public String toString(){
+
+    public String print(){
         if (init != null) return "@" + this.irName + " = global " + this.init.toString();
         else if (((ptrType)this.type).baseType instanceof arrayType)
             return "@" + this.irName + " = global " + this.type.toString();
         else return "@" + this.irName + " = global " + this.type.toString() + " 0";
+    }
+
+    @Override
+    public String toString() {
+        return this.type + " @" + this.irName;
+    }
+    public String getName() {
+        return "@" + this.irName;
     }
 }

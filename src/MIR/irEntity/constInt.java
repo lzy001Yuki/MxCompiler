@@ -15,4 +15,7 @@ public class constInt extends Entity {
     public String toString() {
         return this.type.toString() + " " + value;
     }
+    public String getName() {
+        return ""+value;
+    }
 }

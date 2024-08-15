@@ -8,6 +8,10 @@ public class arrayType extends IRType{
         this.indexType = type;
         this.len = l;
     }
+    public arrayType(IRType type) {
+        super(type.typeName);
+        this.indexType = type;
+    }
     @Override
     public String toString() {
         return "[" + len + " x " + indexType.toString() + "]";
