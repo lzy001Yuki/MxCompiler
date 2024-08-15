@@ -17,15 +17,15 @@ public class CallInst extends Inst{
     }
     @Override
     public String toString() {
-        String ans = "";
-        if (ret.type instanceof VoidType) ans += "call void ";
-        else ans += (ret.getName() + " = call " + ret.type + " ");
-        ans += ("@" + funcName + "(");
+        StringBuilder ans = new StringBuilder();
+        if (ret.type instanceof VoidType) ans.append("call void");
+        else ans.append(ret.getName()).append(" = call ").append(ret.type);
+        ans.append(" @").append(funcName).append("(");
         for (int i = 0; i < para.size(); i++) {
-            ans += (para.get(i).type + " " + para.get(i).getName());
-            if (i != para.size() - 1) ans += ",";
+            ans.append(para.get(i).type).append(" ").append(para.get(i).getName());
+            if (i != para.size() - 1) ans.append(",");
         }
-        ans += ")";
-        return ans;
+        ans.append(")");
+        return ans.toString();
     }
 }

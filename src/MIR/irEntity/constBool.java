@@ -4,11 +4,8 @@ import MIR.type.boolType;
 
 public class constBool extends Entity {
     public boolean value = false;
-    public constBool(String name) {
-        super(new boolType(), name);
-    }
-    public constBool(String name, boolean val) {
-        super(new boolType(), name);
+    public constBool(boolean val) {
+        super(new boolType(), null);
         this.value = val;
     }
     @Override

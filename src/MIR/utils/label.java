@@ -5,12 +5,16 @@ public class label {
     public String labelName;
     public int idx = 0;
     public label(String str) {
-        labelName = str;
-        idx = cnt;
-        cnt++;
+        if (str.equals("entry")) labelName = "entry";
+        else {
+            labelName = str;
+            idx = cnt;
+            cnt++;
+        }
     }
     @Override
     public String toString() {
+        if (labelName.equals("entry")) return labelName;
         return "%"+labelName + idx;
     }
 }

@@ -1,5 +1,7 @@
 import java.io.FileInputStream;
 import java.io.InputStream;
+
+import MIR.IRBuilder;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -29,6 +31,9 @@ public class Main {
             collector.visit(root);
             SemanticChecker checker = new SemanticChecker(globalScope);
             checker.visit(root);
+            IRBuilder irBuilder = new IRBuilder(globalScope);
+            irBuilder.visit(root);
+            System.out.println(irBuilder);
         } catch (Error error) {
             System.out.println(error.toString());
             System.exit(1);

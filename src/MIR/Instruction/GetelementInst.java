@@ -19,10 +19,12 @@ public class GetelementInst extends Inst{
     }
     @Override
     public String toString() {
-        String ans = result.getName() + " = getelementptr " + ptrVal.type + ", ptr " + ptrVal.getName() + " ";
+        StringBuilder ans = new StringBuilder();
+        String str = result.getName() + " = getelementptr " + ptrVal.type + ", ptr " + ptrVal.getName() + " ";
+        ans.append(str);
         for (int i = 0; i < index.size(); i++) {
-            ans += ", " + index.get(i).type + " " + index.get(i).getName();
+            ans.append(", ").append(index.get(i).type).append(" ").append(index.get(i).getName());
         }
-        return ans;
+        return ans.toString();
     }
 }

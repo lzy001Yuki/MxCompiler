@@ -4,11 +4,8 @@ import MIR.type.intType;
 
 public class constInt extends Entity {
     public int value = 0;
-    public constInt(String name) {
-        super(new intType(), name);
-    }
-    public constInt(String name, int val){
-        super(new intType(), name);
+    public constInt(int val){
+        super(new intType(), null);
         this.value = val;
     }
     @Override

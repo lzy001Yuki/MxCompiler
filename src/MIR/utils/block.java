@@ -14,4 +14,19 @@ public class block {
         parentFunc = parent;
         instructions = new ArrayList<>();
     }
+    public block() {
+        instructions = new ArrayList<>();
+    }
+    public void addInst(Inst in) {
+        instructions.add(in);
+    }
+    @Override
+    public String toString() {
+        StringBuilder ans = new StringBuilder();
+        ans.append(lab).append(":\n");
+        for (var inst: instructions) {
+            ans.append(inst).append("\n");
+        }
+        return ans.toString();
+    }
 }

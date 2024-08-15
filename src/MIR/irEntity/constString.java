@@ -6,8 +6,7 @@ import MIR.type.ptrType;
 
 public class constString extends Entity{
     public String value;
-    public boolean isGlobal;
-    public constString(String name, String val, boolean flag) {
+    public constString(String name, String val) {
         super(new ptrType(new arrayType(new charType(), val.length() + 1)), name);
         this.value = val + "\0";
         value = value.replace("\\", "\\5C")
@@ -15,11 +14,9 @@ public class constString extends Entity{
                 .replace("\n", "\\0A")
                 .replace("\t", "\\09")
                 .replace("\"", "\\22");
-        this.isGlobal = flag;
     }
     @Override
     public String toString() {
-        if (isGlobal) return ((ptrType)this.type).baseType.toString() + " c\"" + value + "\"";
-        else return "@" + this.irName + " = private unnamed_addr constant " + ((ptrType)this.type).baseType.toString() + " c\"" + value + "\"";
+        return "@" + this.irName + " = private unnamed_addr constant " + ((ptrType)this.type).baseType.toString() + " c\"" + value + "\"";
     }
 }

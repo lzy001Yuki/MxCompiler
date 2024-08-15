@@ -10,6 +10,7 @@ public class localVar extends Entity{
     public String toString() {
         return this.type + " %" + this.irName;
     }
+    @Override
     public String getName() {
         return "%" + this.irName;
     }

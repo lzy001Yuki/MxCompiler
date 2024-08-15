@@ -4,10 +4,10 @@ import MIR.type.ptrType;
 
 public class constNull extends Entity{
     public constNull() {
-        super(new ptrType(), "null");
+        super(new ptrType(), null);
     }
     @Override
     public String toString(){
-        return this.type.toString() + " " + this.irName;
+        return this.type.toString() + " null";
     }
 }

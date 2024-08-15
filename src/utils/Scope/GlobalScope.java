@@ -1,6 +1,12 @@
 package utils.Scope;
 
 import AST.Def.*;
+import MIR.Instruction.BasicInst;
+import MIR.Instruction.Inst;
+import MIR.irEntity.*;
+import MIR.type.intType;
+import MIR.type.ptrType;
+import MIR.type.voidType;
 import utils.DataType;
 import utils.Error;
 
@@ -10,13 +16,55 @@ import java.util.HashMap;
 public class GlobalScope extends Scope {
     public HashMap<String, funcDefNode> funcMember = null;
     public HashMap<String, classDefNode> classMember = null;
+
+    // IR
+    public HashMap<String, globalClass> irClass = null;
+    public HashMap<String, function> irFunction = null;
+    public HashMap<String, function> builtInFunc = null;
+    public ArrayList<Inst> globalInst;
     public GlobalScope() {
         super(null);
         funcMember = new HashMap<>();
         classMember = new HashMap<>();
+        irClass = new HashMap<>();
+        irFunction = new HashMap<>();
+        builtInFunc = new HashMap<>();
+        globalInst = new ArrayList<>();
         className = null;
         isLoopScope = false;
         addBuiltinFunc();
+        addBuiltinIrFunc();
+    }
+    private void addBuiltinIrFunc() {
+        function print_ = new function("print", new voidType(), false);
+        print_.paraList.add(new localPtr("str"));
+        builtInFunc.put("print", print_);
+        function println_ = new function("println", new voidType(), false);
+        println_.paraList.add(new localPtr("str"));
+        builtInFunc.put("println", println_);
+        function printInt_ = new function("printInt", new voidType(), false);
+        printInt_.addPara(new localVar(new intType(), "n"));
+        builtInFunc.put("printInt", printInt_);
+        function printlnInt_ = new function("printlnInt", new voidType(), false);
+        printlnInt_.addPara(new localVar(new intType(), "n"));
+        builtInFunc.put("printlnInt", printlnInt_);
+        builtInFunc.put("getString", new function("getString", new ptrType(), false));
+        builtInFunc.put("getInt", new function("getInt", new intType(), false));
+        function toString_ = new function("toString", new ptrType(), false);
+        toString_.addPara(new localVar(new intType(), "i"));
+        builtInFunc.put("toString", toString_);
+        function size_ = new function("array.size", new intType(), true);
+        builtInFunc.put("array.size", size_);
+        function length_ = new function("string.length", new intType(), true);
+        builtInFunc.put("string.length", length_);
+        function substring_ = new function("string.substring", new ptrType(), true);
+        substring_.addPara(new localVar(new intType(),"left"));
+        substring_.addPara(new localVar(new intType(), "right"));
+        builtInFunc.put("string.substring", substring_);
+        builtInFunc.put("string.parseInt", new function("string.parseInt", new intType(), true));
+        function ord_ = new function("string.ord", new intType(), true);
+        ord_.addPara(new localVar(new intType(), "pos"));
+        builtInFunc.put("string.ord", ord_);
     }
     private void addBuiltinFunc() {
         funcDefNode length = new funcDefNode(null, "length", new DataType("int"), null);
@@ -73,4 +121,8 @@ public class GlobalScope extends Scope {
     public classDefNode getClass(String name) {
         return classMember.get(name);
     }
+    public void addIrClass(globalClass cls) {irClass.put(cls.irName, cls);}
+    public void addBasicInst(BasicInst in) {globalInst.add(in);}
+    public void addIrFunction(function func) {irFunction.put(func.irName, func);}
+    public function getIrFunction(String name) {return irFunction.get(name);}
 }

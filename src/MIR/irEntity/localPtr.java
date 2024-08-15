@@ -10,6 +10,9 @@ public class localPtr extends Entity{
     public localPtr(IRType type, String str) {
         super(new ptrType(type), str);
     }
+    public localPtr(String name) {
+        super(new ptrType(), name);
+    }
     public localPtr(DataType data, String str) {
         super(dataToIR(data), str);
     }
@@ -17,6 +20,7 @@ public class localPtr extends Entity{
     public String toString() {
         return this.type + " %" + this.irName;
     }
+    @Override
     public String getName() {
         return "%" + this.irName;
     }

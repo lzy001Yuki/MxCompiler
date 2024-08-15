@@ -35,7 +35,7 @@ public class IcmpInst extends Inst{
                 op = "sle";
                 break;
             }
-            default: throw new RuntimeException("invalid operation")
+            default: throw new RuntimeException("invalid operation");
         }
     }
 
