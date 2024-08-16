@@ -24,7 +24,8 @@ public abstract class IRType {
             if (data.arrayDim == 0) data.isArray = false;
             return new ptrType(dataToIR(data));
         } else if (data.typeName.equals("string")) return new ptrType(new arrayType(new charType()));
-        else throw new RuntimeException("wrong ir type");
+        else if (data.typeName.equals("void")) return new voidType();
+        else throw new RuntimeException("wrong dataToIR type");
     }
 
     @Override

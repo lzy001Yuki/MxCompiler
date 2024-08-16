@@ -19,6 +19,7 @@ public class GlobalScope extends Scope {
 
     // IR
     public HashMap<String, globalClass> irClass = null;
+    public HashMap<String, Entity> irMember = null;
     public HashMap<String, function> irFunction = null;
     public HashMap<String, function> builtInFunc = null;
     public ArrayList<Inst> globalInst;
@@ -28,6 +29,7 @@ public class GlobalScope extends Scope {
         classMember = new HashMap<>();
         irClass = new HashMap<>();
         irFunction = new HashMap<>();
+        irMember = new HashMap<>();
         builtInFunc = new HashMap<>();
         globalInst = new ArrayList<>();
         className = null;
@@ -123,6 +125,6 @@ public class GlobalScope extends Scope {
     }
     public void addIrClass(globalClass cls) {irClass.put(cls.irName, cls);}
     public void addBasicInst(BasicInst in) {globalInst.add(in);}
-    public void addIrFunction(function func) {irFunction.put(func.irName, func);}
+    public void addIrFunction(String name, function func) {irFunction.put(name, func);}
     public function getIrFunction(String name) {return irFunction.get(name);}
 }

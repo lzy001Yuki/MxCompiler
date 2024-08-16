@@ -10,6 +10,15 @@ public class IcmpInst extends Inst{
         this.op1 = op1;
         this.op2 = op2;
         result = v;
+        op = advertCmp(str);
+    }
+
+    @Override
+    public String toString() {
+        return result.getName() +" = icmp " + op + " " + op1.type + " " + op1.getName() + " " + op2.getName();
+    }
+    static public String advertCmp(String str) {
+        String op;
         switch (str) {
             case("==") :{
                 op = "eq";
@@ -37,10 +46,6 @@ public class IcmpInst extends Inst{
             }
             default: throw new RuntimeException("invalid operation");
         }
-    }
-
-    @Override
-    public String toString() {
-        return result.getName() +" = icmp " + op + " " + op1.type + " " + op1.getName() + " " + op2.getName();
+        return op;
     }
 }

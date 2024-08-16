@@ -3,17 +3,17 @@ package MIR.irEntity;
 import MIR.type.IRType;
 import MIR.type.ptrType;
 import MIR.type.arrayType;
-public class globalVar extends Entity{
+public class globalVar extends Ptr{
     public Entity init = null; // int x = y --> init()
     public globalVar(IRType type, String name, Entity i) {
-        super(new ptrType(type), name);
+        super(type, name);
         init = i; // null / constVar
     }
     public globalVar(IRType type, String name) {
-        super(new ptrType(type), name);
+        super(type, name);
     }
     public globalVar(Entity en) {
-        super(new ptrType(en.type), en.irName);
+        super(en.type, en.irName);
     }
 
     public String print(){

@@ -6,11 +6,11 @@ import MIR.irEntity.function;
 import java.util.ArrayList;
 
 public class block {
-    public label lab;
+    public String lab;
     public ArrayList<Inst> instructions;
     public function parentFunc;
     public block(String str, function parent) {
-        lab = new label(str);
+        lab = str;
         parentFunc = parent;
         instructions = new ArrayList<>();
     }
@@ -23,9 +23,9 @@ public class block {
     @Override
     public String toString() {
         StringBuilder ans = new StringBuilder();
-        ans.append(lab).append(":\n");
+        ans.append("%").append(lab).append(":\n");
         for (var inst: instructions) {
-            ans.append(inst).append("\n");
+            ans.append("\t").append(inst).append("\n");
         }
         return ans.toString();
     }

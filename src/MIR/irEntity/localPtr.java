@@ -6,15 +6,15 @@ import utils.DataType;
 
 import static MIR.type.IRType.dataToIR;
 
-public class localPtr extends Entity{
+public class localPtr extends Ptr{
     public localPtr(IRType type, String str) {
-        super(new ptrType(type), str);
+        super(type, str);
+    }
+    public localPtr(Entity en) {
+        super(en.type, en.irName);
     }
     public localPtr(String name) {
-        super(new ptrType(), name);
-    }
-    public localPtr(DataType data, String str) {
-        super(dataToIR(data), str);
+        super(name);
     }
     @Override
     public String toString() {
