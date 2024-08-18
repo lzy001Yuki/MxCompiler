@@ -27,6 +27,7 @@ public class globalVar extends Ptr{
     public String toString() {
         return this.type + " @" + this.irName;
     }
+    @Override
     public String getName() {
         return "@" + this.irName;
     }

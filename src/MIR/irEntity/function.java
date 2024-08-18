@@ -1,6 +1,7 @@
 package MIR.irEntity;
 
 import MIR.type.IRType;
+import MIR.type.classType;
 import MIR.utils.block;
 import java.util.ArrayList;
 
@@ -8,11 +9,11 @@ public class function extends Entity{
     public boolean isMember;
     public ArrayList<Entity> paraList;
     public ArrayList<block> blocks;
-    public function(String funcName, IRType ret, boolean flag) {
+    public function(String funcName, IRType ret, boolean flag, String clsName) {
         super(ret, funcName);
         this.isMember = flag;
         paraList = new ArrayList<>();
-        if (flag) paraList.add(new localPtr("this"));
+        if (flag) paraList.add(new localPtr(new classType(clsName), "this"));
         blocks = new ArrayList<>();
     }
     public void addBlock(block blk) {blocks.add(blk);}

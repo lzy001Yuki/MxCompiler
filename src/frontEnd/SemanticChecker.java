@@ -221,9 +221,9 @@ public class SemanticChecker implements ASTVisitor {
         }
         if (it.obj.type.isClass || it.obj.type.isThis) {
             if (!globalScope.classMember.containsKey(it.obj.type.typeName)) throw new Error("SemanticError", "Undefined Identifier", it.pos);
-            classDefNode classDef = globalScope.classMember.get(it.obj.type.typeName);
+            classDefNode classDef = globalScope.getClass(it.obj.type.typeName);
             if (classDef.varMap.containsKey(it.member)) {
-                it.type = classDef.varMap.get(it.member).type;
+                it.type = classDef.varMap.get(it.member).getSecond().type;
                 it.isLeftValue = true;
             } else if (classDef.funcMap.containsKey(it.member)) {
                 funcDefNode function = classDef.funcMap.get(it.member);
@@ -404,7 +404,7 @@ public class SemanticChecker implements ASTVisitor {
         currentScope = new ClassScope(currentScope);
         currentScope.className = it.className;
         for (var varDef: it.varMap.values()) {
-            varDef.accept(this);
+            varDef.getSecond().accept(this);
         }
         if (currentScope instanceof ClassScope) ((ClassScope) currentScope).funcMember = it.funcMap;
         for (var funcDef: it.funcMap.values()) {

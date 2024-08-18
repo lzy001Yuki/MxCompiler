@@ -11,6 +11,7 @@ import parser.MxParserBaseVisitor;
 import AST.ASTNode;
 import utils.DataType;
 import utils.Error;
+import utils.Pair;
 import utils.Position;
 
 import java.math.BigInteger;
@@ -153,11 +154,13 @@ public class ASTBuilder extends MxParserBaseVisitor<ASTNode> {
             if (classDef.funcMap.containsKey(funcDef.Identifier().getText())) throw new Error("SemanticError", "Multiple Definitions", pos);
             classDef.funcMap.put(funcDef.Identifier().getText(), (funcDefNode) visitFuncDef(funcDef));
         }
+        int index = 0;
         for (var varDef: ctx.varDef()) {
             varDefNode def = (varDefNode) visitVarDef(varDef);
             for (var member: def.varList) {
                 if (classDef.varMap.containsKey(member.varName)) throw new Error("SemanticError", "Multiple Definitions", pos);
-                classDef.varMap.put(member.varName, member);
+                classDef.varMap.put(member.varName, new Pair<Integer, varDefAtomNode>(index, member));
+                index++;
             }
         }
         return classDef;

@@ -23,7 +23,7 @@ public class block {
     @Override
     public String toString() {
         StringBuilder ans = new StringBuilder();
-        ans.append("%").append(lab).append(":\n");
+        ans.append(lab).append(":\n");
         for (var inst: instructions) {
             ans.append("\t").append(inst).append("\n");
         }

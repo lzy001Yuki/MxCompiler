@@ -3,9 +3,9 @@ package MIR.Instruction;
 import MIR.irEntity.*;
 
 public class LoadInst extends Inst{
-    public localVar result;
+    public Entity result;
     public Entity pointer;
-    public LoadInst(localVar v, Entity e) {
+    public LoadInst(Entity v, Entity e) {
         result = v;
         pointer = e;
     }

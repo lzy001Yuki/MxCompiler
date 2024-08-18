@@ -9,7 +9,7 @@ public class Entity {
         this.type = t;
         this.irName = str;
     }
-    public String getName(){return null;}
+    public String getName(){return "%" + irName;}
     public boolean isConst() {
         return (this instanceof constNull) || (this instanceof constBool)
                 || (this instanceof constInt) || (this instanceof constString);

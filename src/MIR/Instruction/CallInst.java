@@ -10,12 +10,15 @@ import java.util.ArrayList;
 
 public class CallInst extends Inst{
     public String funcName; //无@
-    public localVar ret;
+    public Entity ret;
     public ArrayList<Entity> para;
     public CallInst(function func, String name) {
         para = new ArrayList<>();
+        if (!func.paraList.isEmpty()) {
+            para.addAll(func.paraList);
+        }
         funcName = func.irName;
-        ret = new localVar(func.type, name);
+        ret = new Entity(func.type, name);
     }
     @Override
     public String toString() {

@@ -14,6 +14,6 @@ public class arrayType extends IRType{
     }
     @Override
     public String toString() {
-        return "[" + len + " x " + indexType.toString() + "]";
+        return indexType.toString();
     }
 }

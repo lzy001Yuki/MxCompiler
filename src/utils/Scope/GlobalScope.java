@@ -4,6 +4,7 @@ import AST.Def.*;
 import MIR.Instruction.BasicInst;
 import MIR.Instruction.Inst;
 import MIR.irEntity.*;
+import MIR.type.boolType;
 import MIR.type.intType;
 import MIR.type.ptrType;
 import MIR.type.voidType;
@@ -38,35 +39,68 @@ public class GlobalScope extends Scope {
         addBuiltinIrFunc();
     }
     private void addBuiltinIrFunc() {
-        function print_ = new function("print", new voidType(), false);
+        function print_ = new function("print", new voidType(), false, null);
         print_.paraList.add(new localPtr("str"));
         builtInFunc.put("print", print_);
-        function println_ = new function("println", new voidType(), false);
+        function println_ = new function("println", new voidType(), false, null);
         println_.paraList.add(new localPtr("str"));
         builtInFunc.put("println", println_);
-        function printInt_ = new function("printInt", new voidType(), false);
+        function printInt_ = new function("printInt", new voidType(), false, null);
         printInt_.addPara(new localVar(new intType(), "n"));
         builtInFunc.put("printInt", printInt_);
-        function printlnInt_ = new function("printlnInt", new voidType(), false);
+        function printlnInt_ = new function("printlnInt", new voidType(), false, null);
         printlnInt_.addPara(new localVar(new intType(), "n"));
         builtInFunc.put("printlnInt", printlnInt_);
-        builtInFunc.put("getString", new function("getString", new ptrType(), false));
-        builtInFunc.put("getInt", new function("getInt", new intType(), false));
-        function toString_ = new function("toString", new ptrType(), false);
+        builtInFunc.put("getString", new function("getString", new ptrType(), false, null));
+        builtInFunc.put("getInt", new function("getInt", new intType(), false, null));
+        function toString_ = new function("toString", new ptrType(), false, null);
         toString_.addPara(new localVar(new intType(), "i"));
         builtInFunc.put("toString", toString_);
-        function size_ = new function("array.size", new intType(), true);
+        function size_ = new function("array.size", new intType(), true, "array");
         builtInFunc.put("array.size", size_);
-        function length_ = new function("string.length", new intType(), true);
+        function length_ = new function("string.length", new intType(), true, "string");
         builtInFunc.put("string.length", length_);
-        function substring_ = new function("string.substring", new ptrType(), true);
+        function substring_ = new function("string.substring", new ptrType(), true, "string");
         substring_.addPara(new localVar(new intType(),"left"));
         substring_.addPara(new localVar(new intType(), "right"));
         builtInFunc.put("string.substring", substring_);
-        builtInFunc.put("string.parseInt", new function("string.parseInt", new intType(), true));
-        function ord_ = new function("string.ord", new intType(), true);
+        builtInFunc.put("string.parseInt", new function("string.parseInt", new intType(), true, "string"));
+        function ord_ = new function("string.ord", new intType(), true, "string");
         ord_.addPara(new localVar(new intType(), "pos"));
         builtInFunc.put("string.ord", ord_);
+        function malloc_ = new function("_malloc_", new ptrType(), false, null);
+        malloc_.addPara(new localVar(new intType(), "bits"));
+        builtInFunc.put("_malloc_", malloc_);
+        localVar para1 = new localVar(new ptrType(), "lhs");
+        localVar para2 = new localVar(new ptrType(), "rhs");
+        function add_ = new function("string.add", new ptrType(), true, "string");
+        add_.addPara(para1);
+        add_.addPara(para2);
+        builtInFunc.put("string.add", add_);
+        function eq_ = new function("string.eq", new boolType(), true, "string");
+        eq_.addPara(para1);
+        eq_.addPara(para2);
+        builtInFunc.put("string.eq", eq_);
+        function ne_ = new function("string.ne", new boolType(), true, "string");
+        ne_.addPara(para1);
+        ne_.addPara(para2);
+        builtInFunc.put("string.ne", ne_);
+        function sgt_ = new function("string.sgt", new boolType(), true, "string");
+        sgt_.addPara(para1);
+        sgt_.addPara(para2);
+        builtInFunc.put("string.sgt", sgt_);
+        function sge_ = new function("string.sge", new boolType(), true, "string");
+        sge_.addPara(para1);
+        sge_.addPara(para2);
+        builtInFunc.put("string.sge", sge_);
+        function slt_ = new function("string.slt", new boolType(), true, "string");
+        slt_.addPara(para1);
+        slt_.addPara(para2);
+        builtInFunc.put("string.slt", slt_);
+        function sle_ = new function("string.sle", new boolType(), true, "string");
+        sle_.addPara(para1);
+        sle_.addPara(para2);
+        builtInFunc.put("string.sle", sle_);
     }
     private void addBuiltinFunc() {
         funcDefNode length = new funcDefNode(null, "length", new DataType("int"), null);
@@ -126,5 +160,9 @@ public class GlobalScope extends Scope {
     public void addIrClass(globalClass cls) {irClass.put(cls.irName, cls);}
     public void addBasicInst(BasicInst in) {globalInst.add(in);}
     public void addIrFunction(String name, function func) {irFunction.put(name, func);}
-    public function getIrFunction(String name) {return irFunction.get(name);}
+    public function getIrFunction(String name) {
+        if (irFunction.containsKey(name)) return irFunction.get(name);
+        if (builtInFunc.containsKey(name)) return builtInFunc.get(name);
+        return null;
+    }
 }
