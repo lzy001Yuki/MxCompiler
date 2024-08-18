@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 public class initArrayExprNode extends ExprNode{
     public ArrayList<ExprNode> list;
+    public ExprNode assignNode;
     public initArrayExprNode(Position pos) {
         super(pos);
         list = new ArrayList<>();

@@ -350,7 +350,12 @@ public class ASTBuilder extends MxParserBaseVisitor<ASTNode> {
             int rbIndex = ctx.RBracket(i).getSymbol().getTokenIndex();
             if (rbIndex == lbIndex + 1) throw new Error("SemanticError", "the size of multidimensional array must be specified from left to right", pos);
         }
-        if (ctx.initArray() != null) arrayExpr.iniList = (initArrayExprNode) visitInitArray(ctx.initArray());
+        if (ctx.initArray() != null) {
+            arrayExpr.iniList = (initArrayExprNode) visitInitArray(ctx.initArray());
+//            atomExprNode atom = new atomExprNode(null);
+//            atom.intExpr = new cIntExpr(arrayExpr.iniList.list.size());
+//            arrayExpr.indexList.add(atom);
+        }
         arrayExpr.type.arrayDim = ctx.LBracket().size();
         arrayExpr.type.isArray = true;
         return arrayExpr;

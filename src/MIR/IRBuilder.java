@@ -12,6 +12,7 @@ import MIR.utils.anonyName;
 import MIR.utils.block;
 import com.sun.jdi.VoidType;
 import utils.DataType;
+import utils.Error;
 import utils.FuncType;
 import utils.Pair;
 import utils.Scope.ClassScope;
@@ -93,6 +94,11 @@ public class IRBuilder implements ASTVisitor {
         // consider one dimension
         function func = globalScope.getIrFunction("_malloc_");
         function callFunc = new function(func.irName, func.type, false, null);
+        if (it.iniList != null) {
+            it.iniList.assignNode = it.assignExpr;
+            it.iniList.accept(this);
+            return;
+        }
         int len = ((atomExprNode)it.indexList.getFirst()).intExpr.value;
         DataType preType = new DataType(it.type);
         localPtr malloc_ptr = new localPtr(IRType.dataToIR(preType), rename("malloc_ptr"));
@@ -103,6 +109,7 @@ public class IRBuilder implements ASTVisitor {
         curBlock.addInst(inst2);
         it.entity = new localPtr(((ptrType)(malloc_ptr.type)).baseType, rename("array_ptr"));
         GetelementInst inst3 = new GetelementInst((localPtr) it.entity, malloc_ptr);
+        inst3.index.add(new constInt(1));
         curBlock.addInst(inst3);
         int indexSize = it.indexList.size();
         indexSize--;
@@ -118,8 +125,8 @@ public class IRBuilder implements ASTVisitor {
             curBlock.addInst(inst7);
             curFunc.addBlock(curBlock);
             multiInit(indexSize, it.indexList, null, iter_ptr, null,(localPtr) it.entity, null, condStr);
-
         }
+
     }
 
     private void multiInit(int dim, ArrayList<ExprNode> array, localPtr pre_ptr, localPtr iter_ptr,localPtr pre_array,  localPtr array_ptr, String preLabel, String label) {
@@ -154,10 +161,10 @@ public class IRBuilder implements ASTVisitor {
             curBlock.addInst(inst10);
             StoreInst inst12 = new StoreInst(new constInt(0), new_iter);
             curBlock.addInst(inst12);
-            curFunc.addBlock(curBlock);
             String newCond = rename("for.cond");
             BrInst inst13 = new BrInst(null, newCond, null);
             curBlock.addInst(inst13);
+            curFunc.addBlock(curBlock);
             multiInit(dim, array, iter_ptr, new_iter, array_ptr, new_array_ptr, stepStr, newCond);
         }  else {
             localVar var2 = (localVar) loadPtr(iter_ptr);
@@ -199,8 +206,10 @@ public class IRBuilder implements ASTVisitor {
     public void visit(assignExprNode it) {
         it.lhs.accept(this);
         it.rhs.accept(this);
-        StoreInst inst = new StoreInst(loadPtr(it.rhs.entity), it.lhs.entity);
-        curBlock.addInst(inst);
+        if (it.rhs.entity != null) {
+            StoreInst inst = new StoreInst(loadPtr(it.rhs.entity), it.lhs.entity);
+            curBlock.addInst(inst);
+        }
     }
     @Override
     public void visit(atomExprNode it) {
@@ -293,7 +302,49 @@ public class IRBuilder implements ASTVisitor {
         it.entity = res;
     }
     @Override
-    public void visit(initArrayExprNode it){}
+    public void visit(initArrayExprNode it){
+        ArrayList<ExprNode> index = new ArrayList<>();
+        if (it.assignNode == null) {
+            it.assignNode = new
+        }
+        initToNew(it, 0, index, it.assignNode);
+    }
+
+    // 最后store
+    public void initToNew(ExprNode it, int dim, ArrayList<ExprNode> index, ExprNode type) {
+        assignExprNode assign = new assignExprNode(null);
+        if (it instanceof initArrayExprNode) {
+            arrayExprNode array = new arrayExprNode(null);
+            atomExprNode length = new atomExprNode(null);
+            length.intExpr = new cIntExpr(((initArrayExprNode) it).list.size());
+            array.indexList.add(length);
+            array.type = it.type;
+            assign.rhs = array;
+            if (dim == 0) {
+                assign.lhs = type;
+            } else {
+                assign.lhs = new indexExprNode(null);
+                ((indexExprNode)assign.lhs).exprNode = type;
+                ((indexExprNode)assign.lhs).index = index;
+            }
+            assign.accept(this);
+            for (int i = 0; i < ((initArrayExprNode) it).list.size(); i++) {
+                atomExprNode atom = new atomExprNode(null);
+                atom.intExpr = new cIntExpr(i);
+                index.add(atom);
+                initToNew(((initArrayExprNode) it).list.get(i), dim + 1, index, type);
+            }
+            if (!index.isEmpty())  index.removeLast();
+        } else if (it instanceof atomExprNode) {
+            assign.rhs = it;
+            assign.lhs = new indexExprNode(null);
+            ((indexExprNode)assign.lhs).exprNode = type;
+            ((indexExprNode)assign.lhs).index = index;
+            assign.accept(this);
+            index.removeLast();
+        } else throw new RuntimeException("Error in initToNew");
+    }
+
     @Override
     public void visit(memberExprNode it){
         it.obj.accept(this);
@@ -625,18 +676,19 @@ public class IRBuilder implements ASTVisitor {
     public void visit(paraListNode it){}
     @Override
     public void visit(varDefAtomNode it){
-        localPtr ptr = new localPtr(IRType.dataToIR(it.type), rename(it.varName + "_ptr"));
+        DataType copy = new DataType(it.type);
+        localPtr ptr = new localPtr(IRType.dataToIR(copy), rename(it.varName + "_ptr"));
         currentScope.addPtr(it.varName, ptr);
         curBlock.addInst(new AllocaInst(ptr, ((ptrType)ptr.type).baseType, null));
         if (it.assignNode != null) {
             it.assignNode.accept(this);
-            if (it.assignNode.entity.isConst()) {
+            if (it.assignNode.entity != null && it.assignNode.entity.isConst()) {
                 curBlock.addInst(new StoreInst(it.assignNode.entity, ptr));
                 if (it.type.typeName.equals("string")) {
                     ((ptrType) ptr.type).baseType = it.assignNode.entity.type;
                 }
             }  else {
-                curBlock.addInst(new StoreInst(it.assignNode.entity, ptr));
+                if (it.assignNode.entity != null) curBlock.addInst(new StoreInst(it.assignNode.entity, ptr));
             }
         }
     }
@@ -679,7 +731,7 @@ public class IRBuilder implements ASTVisitor {
         if (it.type instanceof ptrType) {
             Entity local;
             if (((ptrType) it.type).baseType == null) return it;
-            if (((ptrType) it.type).baseType instanceof ptrType) local = new localPtr(((ptrType) ((ptrType) it.type).baseType).baseType, rename(it.irName.replace("ptr", "val")));
+            if (((ptrType) it.type).baseType instanceof ptrType) local = new localPtr(((ptrType) ((ptrType) it.type).baseType).baseType, generator.getName());
             else local = new localVar(((ptrType)it.type).baseType, generator.getName());
             LoadInst inst = new LoadInst(local, it);
             curBlock.addInst(inst);

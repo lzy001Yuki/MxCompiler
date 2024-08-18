@@ -40,6 +40,7 @@ public class SemanticChecker implements ASTVisitor {
             if (!index.type.typeName.equals("int") || index.type.isArray)
                 throw new Error("SemanticError", "Invalid Type", it.pos);
         }
+        if (it.indexList.isEmpty() && (it.iniList == null || it.iniList.list.isEmpty())) throw new Error("SemanticError", "Invalid Array Initialization", it.pos);
         if (it.iniList != null) {
             if (it.iniList.type == null) it.iniList.type = new DataType();
             it.iniList.accept(this);
@@ -50,7 +51,10 @@ public class SemanticChecker implements ASTVisitor {
     @Override
     public void visit(assignExprNode it){
         it.lhs.accept(this);
+        if (it.rhs instanceof initArrayExprNode) throw new Error("SemanticError", "Const array only allowed when created", it.pos);
         it.rhs.accept(this);
+        if (it.rhs instanceof arrayExprNode) ((arrayExprNode)it.rhs).assignExpr = it.lhs;
+        if (it.rhs instanceof initArrayExprNode) ((initArrayExprNode) it.rhs).assignNode = it.lhs;
         if (!it.lhs.isLeftValue) throw new Error("SemanticError",  "Type Mismatch", it.pos);
         if (!it.lhs.type.equals(it.rhs.type) && !it.rhs.type.isNull) throw new Error("SemanticError", "Type Mismatch", it.pos);
         if (it.rhs.type.isNull && it.lhs.type.checkBaseType()) throw new Error("SemanticError", "Type Mismatch", it.pos);
@@ -186,6 +190,8 @@ public class SemanticChecker implements ASTVisitor {
     }
     @Override
     public void visit(initArrayExprNode it) {
+        if (it.type == null) it.type = new DataType();
+        it.type.isArray = true;
         it.type.arrayDim++;
         if (it.list.isEmpty()) {
             it.type = new DataType();
@@ -198,6 +204,7 @@ public class SemanticChecker implements ASTVisitor {
             if (ini.type == null) ini.type = new DataType();
             ini.accept(this);
         }
+        DataType itType = it.list.getFirst().type;
         for (int i = 0; i < it.list.size() - 1; i++) {
             if (!it.list.get(i).type.isNull && !it.list.get(i + 1).type.isNull &&!it.list.get(i).type.equals(it.list.get(i + 1).type))
                 throw new Error("SemanticError", "Type Mismatch", it.pos);
@@ -205,7 +212,9 @@ public class SemanticChecker implements ASTVisitor {
                 if (it.list.get(i).type.arrayDim != it.list.get(i + 1).type.arrayDim)
                     throw new Error("SemanticError", "Type Mismatch", it.pos);
             }
+            if (!it.list.get(i).type.isNull) itType = it.list.get(i).type;
         }
+        for (int i = 0; i < it.list.size(); i++) it.list.get(i).type = itType;
         it.type = it.list.getFirst().type;
         it.type.arrayDim = it.list.getFirst().type.arrayDim + 1;
         it.type.isArray = true;
@@ -470,6 +479,18 @@ public class SemanticChecker implements ASTVisitor {
             if (it.assignNode.type.isNull && it.type.checkBaseType()) throw new Error("SemanticError", "Type Mismatch", it.pos);
         }
         currentScope.addVar(it.varName, it.pos, it.type);
+        if (it.assignNode instanceof arrayExprNode) {
+            atomExprNode atom = new atomExprNode(null);
+            atom.id = it.varName;
+            atom.accept(this);
+            ((arrayExprNode)it.assignNode).assignExpr = atom;
+        }
+        if (it.assignNode instanceof initArrayExprNode) {
+            atomExprNode atom = new atomExprNode(null);
+            atom.id = it.varName;
+            atom.accept(this);
+            ((initArrayExprNode) it.assignNode).assignNode = atom;
+        }
     }
     @Override
     public void visit(varDefNode it) {
