@@ -47,33 +47,40 @@ public class IRBuilder implements ASTVisitor {
                 globalClass newCls = new globalClass(((classDefNode) def).className);
                 globalScope.addIrClass(newCls);
                 for (Map.Entry<String, Pair<Integer,varDefAtomNode>> entry: ((classDefNode) def).varMap.entrySet()) {
+                    int dim = entry.getValue().getSecond().type.arrayDim;
                     newCls.members.add(IRType.dataToIR(entry.getValue().getSecond().type));
+                    entry.getValue().getSecond().type.arrayDim = dim;
                 }
                 globalScope.addBasicInst(new BasicInst(newCls.print()));
                 def.accept(this);
             } else if (def instanceof varDefNode) {
                 for (var varDef: ((varDefNode) def).varList) {
                     String newName = rename(varDef.varName);
-                    globalVar gVar;
+                    int dim = varDef.type.arrayDim;
+                    globalVar gVar = new globalVar(IRType.dataToIR(varDef.type), newName);
+                    varDef.type.arrayDim = dim;
+                    globalScope.addPtr(varDef.varName, gVar);
                     if (varDef.assignNode != null) {
                         varDef.assignNode.accept(this);
-                        if (varDef.assignNode.entity.isConst())  gVar = new globalVar(IRType.dataToIR(varDef.type), newName, varDef.assignNode.entity);
-                        else {
-                            gVar = new globalVar(IRType.dataToIR(varDef.type), newName);
-                            globalVar pointer = new globalVar(varDef.assignNode.entity);
-                            localVar local = new localVar(((ptrType)pointer.type).baseType, generator.getName());
-                            curBlock.addInst(new LoadInst(local, pointer));
-                            curBlock.addInst(new StoreInst(local, gVar));
+                        if (varDef.assignNode.entity != null) {
+                            if (varDef.assignNode.entity.isConst()) gVar.init = varDef.assignNode.entity;
+                            else {
+                                globalVar pointer = new globalVar(varDef.assignNode.entity);
+                                localVar local = new localVar(((ptrType) pointer.type).baseType, generator.getName());
+                                curBlock.addInst(new LoadInst(local, pointer));
+                                curBlock.addInst(new StoreInst(local, gVar));
+                            }
                         }
-                    } else gVar = new globalVar(IRType.dataToIR(varDef.type), newName);
+                    }
                     globalScope.addBasicInst(new BasicInst(gVar.print()));
-                    globalScope.addPtr(varDef.varName, gVar);
                 }
                 curBlock = curFunc.blocks.getFirst();
             } else if (def instanceof funcDefNode) {
                 curBlock = new block("entry", curFunc);
+                int dim = ((funcDefNode) def).returnType.arrayDim;
                 curFunc = new function(((funcDefNode) def).funcName,
                         IRType.dataToIR(((funcDefNode) def).returnType), false, null);
+                ((funcDefNode) def).returnType.arrayDim = dim;
                 curFunc.addBlock(curBlock);
                 globalScope.addIrFunction(((funcDefNode) def).funcName, curFunc);
                 def.accept(this);
@@ -291,7 +298,7 @@ public class IRBuilder implements ASTVisitor {
     public void visit(indexExprNode it){
         it.exprNode.accept(this);
         localPtr res = new localPtr("here");
-        localPtr cur = (localPtr) it.exprNode.entity;
+        Ptr cur = (Ptr)it.exprNode.entity;
         for (int i = 0; i < it.index.size(); i++) {
             cur = (localPtr) loadPtr(cur);
             res = new localPtr(((ptrType) cur.type).baseType, rename("array_ptr"));
@@ -305,9 +312,16 @@ public class IRBuilder implements ASTVisitor {
     public void visit(initArrayExprNode it){
         ArrayList<ExprNode> index = new ArrayList<>();
         if (it.assignNode == null) {
-            it.assignNode = new
-        }
-        initToNew(it, 0, index, it.assignNode);
+            varDefAtomNode varDef = new varDefAtomNode(null, rename("const.array"));
+            varDef.assignNode = it;
+            varDef.type = it.type;
+            atomExprNode atom = new atomExprNode(null);
+            atom.id = varDef.varName;
+            atom.type = it.type;
+            it.assignNode = atom;
+            visit(varDef);
+            it.entity = currentScope.getPtrGlobally(varDef.varName);
+        } else initToNew(it, 0, index, it.assignNode);
     }
 
     // 最后store
@@ -367,7 +381,9 @@ public class IRBuilder implements ASTVisitor {
             it.entity = new function(func.irName, func.type, false, object.className);
             ((function) it.entity).paraList.add(it.obj.entity);
         } else {
+            int dim = it.type.arrayDim;
             localPtr result = new localPtr(IRType.dataToIR(it.type), rename(it.member + "_ptr"));
+            it.type.arrayDim = dim;
             GetelementInst inst = new GetelementInst(result, (localPtr) it.obj.entity);
             inst.index.add(new constInt(0));
             inst.index.add(new constInt(object.varMap.get(it.member).getFirst()));
@@ -606,7 +622,9 @@ public class IRBuilder implements ASTVisitor {
         currentScope.className = it.className;
         for (Map.Entry<String, Pair<Integer, varDefAtomNode>> entry: it.varMap.entrySet()) {
             varDefAtomNode value = entry.getValue().getSecond();
+            int dim = value.type.arrayDim;
             memberPtr mPtr = new memberPtr(IRType.dataToIR(value.type), value.varName, it.className, entry.getValue().getFirst());
+            value.type.arrayDim = dim;
             mPtr.parent = new localPtr(new localPtr(new classType(it.className), "this").type, "this_ptr");
             currentScope.addPtr(value.varName, mPtr);
         }
@@ -618,7 +636,9 @@ public class IRBuilder implements ASTVisitor {
         }
         for (Map.Entry<String, funcDefNode> entry: it.funcMap.entrySet()) {
             curBlock = new block("entry", curFunc);
+            int dim = entry.getValue().returnType.arrayDim;
             curFunc = new function(it.className + "." + entry.getKey(), IRType.dataToIR(entry.getValue().returnType), true, it.className);
+            entry.getValue().returnType.arrayDim = dim;
             entry.getValue().accept(this);
             curFunc.addBlock(curBlock);
             globalScope.addIrFunction(entry.getKey(), curFunc);
@@ -649,7 +669,9 @@ public class IRBuilder implements ASTVisitor {
             curBlock.addInst(new StoreInst(curFunc.paraList.getFirst(), ptr));
         }
         for (var para: it.para.paraList) {
+            int dim = para.paraType.arrayDim;
             localVar vari = new localVar(IRType.dataToIR(para.paraType), rename(para.paraName) + "_para");
+            para.paraType.arrayDim = dim;
             curFunc.addPara(vari);
             Ptr ptr = new localPtr(vari.type, vari.irName.replace("_para", "_ptr"));
             currentScope.addPtr(para.paraName, ptr);
@@ -676,8 +698,9 @@ public class IRBuilder implements ASTVisitor {
     public void visit(paraListNode it){}
     @Override
     public void visit(varDefAtomNode it){
-        DataType copy = new DataType(it.type);
-        localPtr ptr = new localPtr(IRType.dataToIR(copy), rename(it.varName + "_ptr"));
+        int dim = it.type.arrayDim;
+        localPtr ptr = new localPtr(IRType.dataToIR(it.type), rename(it.varName + "_ptr"));
+        it.type.arrayDim = dim;
         currentScope.addPtr(it.varName, ptr);
         curBlock.addInst(new AllocaInst(ptr, ((ptrType)ptr.type).baseType, null));
         if (it.assignNode != null) {

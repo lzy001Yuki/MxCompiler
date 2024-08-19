@@ -25,10 +25,10 @@ public abstract class IRType {
                 data.isArray = false;
             } return new ptrType(dataToIR(data));
         }
+        if (data.isNull) return new ptrType();
         if (data.typeName.equals("int")) return new intType();
         else if (data.typeName.equals("bool")) return new boolType();
         else if (data.isClass || data.isThis) return new ptrType(new classType(data.typeName));
-        else if (data.isNull) return new ptrType();
         else if (data.typeName.equals("string")) {
             return new ptrType(new stringType());
         }

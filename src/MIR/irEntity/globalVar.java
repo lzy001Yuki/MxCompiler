@@ -18,9 +18,9 @@ public class globalVar extends Ptr{
 
     public String print(){
         if (init != null) return "@" + this.irName + " = global " + this.init;
-        else if (((ptrType)this.type).baseType instanceof arrayType)
-            return "@" + this.irName + " = global " + ((ptrType) this.type).baseType;
-        else return "@" + this.irName + " = global " + ((ptrType) this.type).baseType.toString() + " 0";
+        else if (((ptrType) this.type).baseType instanceof ptrType)
+            return "@" + this.irName + " = global " + ((ptrType) this.type).baseType.toString() + " null";
+        else             return "@" + this.irName + " = global " + ((ptrType) this.type).baseType.toString() + " 0";
     }
 
     @Override
