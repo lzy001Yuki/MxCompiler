@@ -8,7 +8,7 @@ import MIR.type.stringType;
 public class constString extends Entity{
     public String value;
     public constString(String name, String val) {
-        super(new ptrType(new stringType(name)), name);
+        super(new ptrType(new stringType(val)), name);
         this.value = val + "\0";
         value = value.replace("\\", "\\5C")
                 .replace("\0", "\\00")

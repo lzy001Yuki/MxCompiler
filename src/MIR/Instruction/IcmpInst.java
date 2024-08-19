@@ -15,7 +15,7 @@ public class IcmpInst extends Inst{
 
     @Override
     public String toString() {
-        return result.getName() +" = icmp " + op + " " + op1.type + " " + op1.getName() + " " + op2.getName();
+        return result.getName() +" = icmp " + op + " " + op1.type + " " + op1.getName() + " ," + op2.getName();
     }
     static public String advertCmp(String str) {
         String op;

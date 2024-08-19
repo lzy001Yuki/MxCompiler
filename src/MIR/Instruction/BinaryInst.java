@@ -1,12 +1,14 @@
 package MIR.Instruction;
 
 import MIR.irEntity.*;
+import MIR.type.ptrType;
 
 public class BinaryInst extends Inst{
     public localVar result;
     public String op;
     public Entity op1, op2;
     public BinaryInst(localVar v, String str, Entity op1, Entity op2) {
+        if (op1.type instanceof ptrType) throw new RuntimeException("error in binaryinst type");
         result = v;
         this.op1 = op1;
         this.op2 = op2;
@@ -14,7 +16,7 @@ public class BinaryInst extends Inst{
     }
     @Override
     public String toString() {
-        return result.getName() + " = " + op + " " + op1.type + " " + op1.getName() + " " + op2.getName();
+        return result.getName() + " = " + op + " " + op1.type + " " + op1.getName() + ", " + op2.getName();
     }
     public static String advertOp(String str) {
         switch (str) {

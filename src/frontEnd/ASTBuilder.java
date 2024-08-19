@@ -133,7 +133,7 @@ public class ASTBuilder extends MxParserBaseVisitor<ASTNode> {
         else if (ctx.init2 != null) forStat.initExpr = (ExprNode) visit(ctx.init2);
         if (ctx.condExpr != null) forStat.condExpr = (ExprNode) visit(ctx.condExpr);
         if (ctx.stepExpr != null) forStat.stepExpr = (ExprNode) visit(ctx.stepExpr);
-        forStat.stat = (statNode) visit(ctx.stat());
+        if (ctx.stat() != null)forStat.stat = (statNode) visit(ctx.stat());
         return forStat;
     }
     @Override

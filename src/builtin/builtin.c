@@ -5,7 +5,7 @@ int scanf(const char *pattern, ...);
 int sscanf(const char *src, const char *pattern, ...);
 unsigned strlen(const char *str);
 int strcmp(const char *s1, const char *s2);
-void *memcpy(void *dest, const void *src, int n);
+void *memcpy(void *dest, const void *src, unsigned n);
 void *malloc(unsigned n);
 
 char* _malloc_(int n) {

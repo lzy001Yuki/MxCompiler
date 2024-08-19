@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 public class CallInst extends Inst{
     public String funcName; //无@
-    public Entity ret;
+    public localVar ret;
     public ArrayList<Entity> para;
     public CallInst(function func, String name) {
         para = new ArrayList<>();
@@ -18,7 +18,7 @@ public class CallInst extends Inst{
             para.addAll(func.paraList);
         }
         funcName = func.irName;
-        ret = new Entity(func.type, name);
+        ret = new localVar(func.type, name);
     }
     @Override
     public String toString() {
