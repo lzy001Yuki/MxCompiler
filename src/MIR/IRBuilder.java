@@ -574,6 +574,13 @@ public class IRBuilder implements ASTVisitor {
         CallInst inst = new CallInst(func, it.entity.irName);
         inst.para.add(new constInt(obj.varMap.size() * 4));
         curBlock.addInst(inst);
+        function constr = globalScope.getIrFunction(it.type.typeName + "." + it.type.typeName);
+        if (constr != null) {
+            function copy_cons = new function(constr.irName, constr.type, false, constr.className);
+            copy_cons.addPara(it.entity);
+            CallInst inst2 = new CallInst(copy_cons, null);
+            curBlock.addInst(inst2);
+        }
     }
 
     @Override
@@ -741,7 +748,7 @@ public class IRBuilder implements ASTVisitor {
         }
         if (it.constructor != null) {
             it.constructor.accept(this);
-            globalScope.addIrFunction(it.className, curFunc);
+            globalScope.addIrFunction(it.className + "." + it.className, curFunc);
             curFunc = init_;
             curBlock = null;
         }
