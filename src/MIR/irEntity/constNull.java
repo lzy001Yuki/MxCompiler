@@ -10,4 +10,6 @@ public class constNull extends Entity{
     public String toString(){
         return this.type.toString() + " null";
     }
+    @Override
+    public String getName(){return "null";}
 }

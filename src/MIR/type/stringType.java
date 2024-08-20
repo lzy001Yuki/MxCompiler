@@ -1,7 +1,7 @@
 package MIR.type;
 
 public class stringType extends IRType{
-    int len;
+    public int len;
     public stringType(){
         super(new arrayType(new charType()));
     }
@@ -11,6 +11,6 @@ public class stringType extends IRType{
     }
     @Override
     public String toString() {
-        return "[" + len + " x " + "i8" + "]";
+        return "ptr";
     }
 }

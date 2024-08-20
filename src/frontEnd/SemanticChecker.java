@@ -190,6 +190,7 @@ public class SemanticChecker implements ASTVisitor {
     }
     @Override
     public void visit(initArrayExprNode it) {
+        // 可以不用递归，直接算{的数量（最大的）
         if (it.type == null) it.type = new DataType();
         it.type.isArray = true;
         it.type.arrayDim++;
@@ -281,7 +282,7 @@ public class SemanticChecker implements ASTVisitor {
                 if (it.opStr.equals("+")) {
                     if (((atomExprNode) it.exprNode).intExpr.valStr != null) {
                         BigInteger val1 = new BigInteger(((atomExprNode) it.exprNode).intExpr.valStr);
-                        BigInteger val2 = new BigInteger("214783647");
+                        BigInteger val2 = new BigInteger("2147483647");
                         if (val1.compareTo(val2) > 0)
                             throw new Error("SemanticError", "int field exceeded", it.pos);
                     }

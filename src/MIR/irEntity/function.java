@@ -9,12 +9,14 @@ public class function extends Entity{
     public boolean isMember;
     public ArrayList<Entity> paraList;
     public ArrayList<block> blocks;
+    public String className;
     public function(String funcName, IRType ret, boolean flag, String clsName) {
         super(ret, funcName);
         this.isMember = flag;
         paraList = new ArrayList<>();
         if (flag) paraList.add(new localPtr(new classType(clsName), "this"));
         blocks = new ArrayList<>();
+        this.className = clsName;
     }
     public void addBlock(block blk) {blocks.add(blk);}
     public void addPara(Entity en) {paraList.add(en);}

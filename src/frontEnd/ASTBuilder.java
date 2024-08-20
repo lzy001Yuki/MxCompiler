@@ -196,7 +196,7 @@ public class ASTBuilder extends MxParserBaseVisitor<ASTNode> {
             atomExpr.boolExpr = new cBoolExpr(true);
         } else if (ctx.atom().Integer() != null) {
             BigInteger val1 = new BigInteger(ctx.atom().Integer().getText());
-            BigInteger val2 = new BigInteger("214783647");
+            BigInteger val2 = new BigInteger("2147483647");
             if (val1.compareTo(val2) > 0) atomExpr.intExpr = new cIntExpr(ctx.atom().Integer().getText());
             else atomExpr.intExpr = new cIntExpr(Integer.parseInt(ctx.atom().Integer().getText()));
         } else if (ctx.atom().Null() != null) {

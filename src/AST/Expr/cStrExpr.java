@@ -9,6 +9,6 @@ public class cStrExpr {
     public DataType type;
     public cStrExpr(String val) {
         type = new DataType("string");
-        this.value = val.substring(1, val.length() - 1);
+        this.value = val;
     }
 }

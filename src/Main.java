@@ -12,7 +12,7 @@ import parser.MxParser;
 import parser.MxLexer;
 import utils.MxErrorListener;
 import utils.Scope.GlobalScope;
-// fail: misc condition.mx??
+// pass: e bubble quick selection t1-74
 public class Main {
     public static void main(String[] args) throws Exception {
         InputStream input = System.in;
