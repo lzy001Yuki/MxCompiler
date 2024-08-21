@@ -22,6 +22,7 @@ public class cFormatExpr extends ExprNode {
         middle = new ArrayList<>();
         this.value = val + "\0";
     }
+
     @Override
     public void accept(ASTVisitor visitor) {
         visitor.visit(this);

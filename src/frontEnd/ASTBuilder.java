@@ -210,6 +210,7 @@ public class ASTBuilder extends MxParserBaseVisitor<ASTNode> {
         }
         return atomExpr;
     }
+
     @Override
     public ASTNode visitStringFormat(StringFormatContext ctx) {
         Position pos = new Position(ctx);

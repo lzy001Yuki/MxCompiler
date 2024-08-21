@@ -404,7 +404,6 @@ public class IRBuilder implements ASTVisitor {
         curBlock.addInst(inst1);
         return res;
     }
-
     private localVar formatProcess(ExprNode expr, localVar ptr) {
         localVar res;
         if (expr.type.typeName.equals("int")) {
