@@ -216,6 +216,11 @@ public class ASTBuilder extends MxParserBaseVisitor<ASTNode> {
         cFormatExpr formatString;
         if (ctx.Head() != null)  formatString = new cFormatExpr(pos, ctx.getText(), false);
         else formatString = new cFormatExpr(pos, ctx.getText(), true);
+        if (ctx.Head() != null) formatString.head = ctx.Head().toString();
+        if (ctx.Middle() != null) {
+            for (var mid: ctx.Middle()) formatString.middle.add(mid.toString());
+        }
+        if (ctx.Tail() != null) formatString.tail = ctx.Tail().toString();
         for (var def: ctx.expr()) {
             ExprNode exprNode = (ExprNode) visit(def);
             formatString.expr.add(exprNode);

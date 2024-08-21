@@ -275,6 +275,9 @@ public class IRBuilder implements ASTVisitor {
             }
         } else if (it.thisExpr != null) {
             it.entity = new localPtr(new ptrType(new classType(it.thisExpr.type.typeName)), "this_ptr");
+        } else if (it.formatExpr != null) {
+            it.formatExpr.accept(this);
+            it.entity = it.formatExpr.entity;
         }
     }
     @Override
@@ -348,7 +351,124 @@ public class IRBuilder implements ASTVisitor {
         }
     }
     @Override
-    public void visit(cFormatExpr it){}
+    public void visit(cFormatExpr it){
+        if (it.formatType) {
+            it.value = getStr(it.value.substring(1, it.value.length() - 1));
+            it.value = it.value.replace("$$", "$");
+            it.entity = new constString(rename(".str"), it.value);
+            globalScope.addBasicInst(new BasicInst(it.entity.toString()));
+        } else {
+            constString headStr = null;
+            localVar localStr = null;
+            if (it.head.length() > 3) {
+                headStr = new constString(rename(".str"), getStr(it.head.substring(1)).replace("$$", "$"));
+                globalScope.addBasicInst(new BasicInst(headStr.toString()));
+                localPtr ptr = new localPtr(new ptrType(headStr.type), generator.getName());
+                curBlock.addInst(new AllocaInst(ptr, ptr.type, null));
+                curBlock.addInst(new StoreInst(headStr, ptr));
+                localStr = new localVar(new ptrType(headStr.type), generator.getName());
+                curBlock.addInst(new LoadInst(localStr, ptr));
+            }
+            ExprNode headExpr = it.expr.getFirst();
+            headExpr.accept(this);
+            localStr = formatProcess(headExpr, localStr);
+            for (int i = 0; i < it.middle.size(); i++) {
+                constString midStr = new constString(rename(".str"), getStr(it.middle.get(i)).replace("$$", "$"));
+                globalScope.addBasicInst(new BasicInst(midStr.toString()));
+                localStr = addConstString(midStr, localStr);
+                it.expr.get(i + 1).accept(this);
+                localStr = formatProcess(it.expr.get(i + 1), localStr);
+            }
+            constString tailStr = new constString(rename(".str"), getStr(it.tail).replace("$$", "$"));
+            localStr = addConstString(tailStr, localStr);
+            it.entity = new localPtr(new ptrType(new stringType()), generator.getName());
+            curBlock.addInst(new AllocaInst((Ptr)it.entity, it.entity.type, null));
+            curBlock.addInst(new StoreInst(localStr, it.entity));
+            globalScope.addBasicInst(new BasicInst(tailStr.toString()));
+        }
+    }
+
+    private localVar addConstString(constString cStr, localVar ptr) {
+        localPtr cPtr = new localPtr(new ptrType(cStr.type), generator.getName());
+        curBlock.addInst(new AllocaInst(cPtr, cPtr.type, null));
+        curBlock.addInst(new StoreInst(cStr, cPtr));
+        localVar vari = new localVar(new ptrType(new stringType()), generator.getName());
+        curBlock.addInst(new LoadInst(vari, cPtr));
+        if (ptr == null) return vari;
+        function func1 = globalScope.getIrFunction("string.add");
+        function callFunc1 = new function(func1.irName, func1.type, false, null);
+        localVar res = new localVar(ptr.type, generator.getName());
+        CallInst inst1 = new CallInst(callFunc1, res.irName);
+        inst1.para.add(ptr);
+        inst1.para.add(vari);
+        curBlock.addInst(inst1);
+        return res;
+    }
+
+    private localVar formatProcess(ExprNode expr, localVar ptr) {
+        localVar res;
+        if (expr.type.typeName.equals("int")) {
+            function func = globalScope.getIrFunction("toString");
+            function callFunc = new function(func.irName, func.type, false, null);
+            localVar toStr = new localVar(new ptrType(new stringType()), generator.getName());
+            CallInst inst = new CallInst(callFunc, toStr.irName);
+            inst.para.add(loadPtr(expr.entity));
+            curBlock.addInst(inst);
+            if (ptr != null) {
+                function func1 = globalScope.getIrFunction("string.add");
+                function callFunc1 = new function(func1.irName, func1.type, false, null);
+                res = new localVar(ptr.type, generator.getName());
+                CallInst inst1 = new CallInst(callFunc1, res.irName);
+                inst1.para.add(ptr);
+                inst1.para.add(toStr);
+                curBlock.addInst(inst1);
+                return res;
+            } else {
+                return toStr;
+            }
+        } else if (expr.type.typeName.equals("bool")) {
+            localVar vari = (localVar) loadPtr(expr.entity);
+            String trueStr = rename("if.true");
+            String falseStr = rename("if.false");
+            String endStr = rename("if.end");
+            BrInst inst = new BrInst(vari, trueStr, falseStr);
+            curBlock.addInst(inst);
+            curBlock = new block(trueStr, curFunc);
+            curFunc.addBlock(curBlock);
+            constString trueConst = new constString(rename(".str"), "true");
+            globalScope.addBasicInst(new BasicInst(trueConst.toString()));
+            localVar trueVar = addConstString(trueConst, ptr);
+            curBlock.addInst(new BrInst(null, endStr, null));
+            curBlock = new block(falseStr, curFunc);
+            curFunc.addBlock(curBlock);
+            constString falseConst = new constString(rename(".str"), "false");
+            globalScope.addBasicInst(new BasicInst(falseConst.toString()));
+            localVar falseVar = addConstString(falseConst, ptr);
+            curBlock.addInst(new BrInst(null, endStr, null));
+            curBlock = new block(endStr, curFunc);
+            curFunc.addBlock(curBlock);
+            res = new localVar(new ptrType(new stringType()), generator.getName());
+            PhiInst inst1 = new PhiInst(res);
+            inst1.jump.add(new Pair<>(trueVar, trueStr));
+            inst1.jump.add(new Pair<>(falseVar, falseStr));
+            curBlock.addInst(inst1);
+            return res;
+        } else if (expr.type.typeName.equals("string")) {
+            if (ptr != null) {
+                function func = globalScope.getIrFunction("string.add");
+                function callFunc = new function(func.irName, func.type, false, null);
+                res = new localVar(ptr.type, generator.getName());
+                CallInst inst = new CallInst(callFunc, res.irName);
+                inst.para.add(ptr);
+                inst.para.add(loadPtr(expr.entity));
+                curBlock.addInst(inst);
+                return res;
+            } else {
+               Entity en = loadPtr(expr.entity);
+               return new localVar(en.type, en.irName);
+            }
+        } else return null;
+    }
     @Override
     public void visit(funcExprNode it){
         it.exprNode.accept(this);
@@ -840,7 +960,7 @@ public class IRBuilder implements ASTVisitor {
         curBlock.addInst(new AllocaInst(ptr, ((ptrType)ptr.type).baseType, null));
         if (it.assignNode != null) {
             it.assignNode.accept(this);
-            if (it.assignNode.entity != null && it.assignNode.entity.isConst() || (it.assignNode instanceof arrayExprNode) || it.assignNode instanceof varExprNode || it.assignNode instanceof funcExprNode) {
+            if (it.assignNode.entity != null && (it.assignNode.entity.isConst() || (it.assignNode instanceof arrayExprNode) || it.assignNode instanceof varExprNode || it.assignNode instanceof funcExprNode)) {
                 curBlock.addInst(new StoreInst(it.assignNode.entity, ptr));
                 // why ??????
                 if (it.type.typeName.equals("string")) {
