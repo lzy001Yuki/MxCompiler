@@ -1,6 +1,7 @@
 package utils.Scope;
 
 import AST.Def.*;
+import MIR.IRVisitor;
 import MIR.Instruction.BasicInst;
 import MIR.Instruction.Inst;
 import MIR.irEntity.*;
@@ -24,6 +25,7 @@ public class GlobalScope extends Scope {
     public HashMap<String, function> irFunction = null;
     public HashMap<String, function> builtInFunc = null;
     public ArrayList<Inst> globalInst;
+    public ArrayList<constString> globalString;
     public GlobalScope() {
         super(null);
         funcMember = new HashMap<>();
@@ -33,6 +35,7 @@ public class GlobalScope extends Scope {
         irMember = new HashMap<>();
         builtInFunc = new HashMap<>();
         globalInst = new ArrayList<>();
+        globalString = new ArrayList<>();
         className = null;
         isLoopScope = false;
         addBuiltinFunc();
@@ -164,5 +167,9 @@ public class GlobalScope extends Scope {
         if (irFunction.containsKey(name)) return irFunction.get(name);
         if (builtInFunc.containsKey(name)) return builtInFunc.get(name);
         return null;
+    }
+    public void addString(constString cString) {globalString.add(cString);}
+    public void accept(IRVisitor visitor) {
+        visitor.visit(this);
     }
 }

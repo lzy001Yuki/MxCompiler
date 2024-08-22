@@ -1,5 +1,6 @@
 package MIR.Instruction;
 
+import MIR.IRVisitor;
 import MIR.irEntity.*;
 import MIR.utils.label;
 
@@ -15,5 +16,9 @@ public class BrInst extends Inst{
     public String toString() {
         if (cond != null) return "br "+cond+", label %"+iftrue+", label %"+iffalse;
         else return "br label %" +iftrue;
+    }
+    @Override
+    public void accept(IRVisitor visitor) {
+        visitor.visit(this);
     }
 }

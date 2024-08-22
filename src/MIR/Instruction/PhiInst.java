@@ -1,5 +1,6 @@
 package MIR.Instruction;
 
+import MIR.IRVisitor;
 import MIR.irEntity.*;
 import utils.Pair;
 
@@ -22,5 +23,9 @@ public class PhiInst extends Inst{
             if (i != jump.size() - 1) ans.append(", ");
         }
         return ans.toString();
+    }
+    @Override
+    public void accept(IRVisitor visitor) {
+        visitor.visit(this);
     }
 }

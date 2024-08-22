@@ -1,5 +1,6 @@
 package MIR.Instruction;
 
+import MIR.IRVisitor;
 import MIR.irEntity.*;
 import MIR.type.ptrType;
 
@@ -24,5 +25,9 @@ public class GetelementInst extends Inst{
             ans.append(", ").append(index.get(i).type).append(" ").append(index.get(i).getName());
         }
         return ans.toString();
+    }
+    @Override
+    public void accept(IRVisitor visitor) {
+        visitor.visit(this);
     }
 }

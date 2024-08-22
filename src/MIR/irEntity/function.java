@@ -1,5 +1,6 @@
 package MIR.irEntity;
 
+import MIR.IRVisitor;
 import MIR.type.IRType;
 import MIR.type.classType;
 import MIR.utils.block;
@@ -44,5 +45,8 @@ public class function extends Entity{
         }
         ans.append(")\n");
         return ans.toString();
+    }
+    public void accept(IRVisitor visitor) {
+        visitor.visit(this);
     }
 }

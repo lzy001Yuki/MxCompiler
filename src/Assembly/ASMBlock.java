@@ -16,7 +16,7 @@ public class ASMBlock extends Operand {
     @Override
     public String toString() {
         StringBuilder ans = new StringBuilder();
-        ans.append(".L").append(label).append(":\n");
+        ans.append(label).append(":\n");
         for (var i: inst) {
             ans.append('\t').append(i);
         }

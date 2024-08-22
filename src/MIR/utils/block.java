@@ -1,5 +1,6 @@
 package MIR.utils;
 
+import MIR.IRVisitor;
 import MIR.Instruction.Inst;
 import MIR.irEntity.function;
 
@@ -28,5 +29,8 @@ public class block {
             ans.append("\t").append(inst).append("\n");
         }
         return ans.toString();
+    }
+    public void accept(IRVisitor visitor) {
+        visitor.visit(this);
     }
 }

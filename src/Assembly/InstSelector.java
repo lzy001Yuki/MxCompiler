@@ -1,6 +1,7 @@
 package Assembly;
 
 import Assembly.Operand.Operand;
+import Assembly.Operand.stringGlobal;
 import Assembly.Operand.varGlobal;
 import MIR.IRVisitor;
 import MIR.Instruction.*;
@@ -19,6 +20,9 @@ public class InstSelector implements IRVisitor {
     public ArrayList<Operand> data;
     public ArrayList<Operand> text;
     public ArrayList<Operand> rodata;
+    public ASMBlock curBlock;
+    public ASMFunction curFunc;
+    public int funcNum = 0;
     public InstSelector(GlobalScope global) {
         globalScope = global;
         data = new ArrayList<>();
@@ -29,13 +33,31 @@ public class InstSelector implements IRVisitor {
     public void visit(GlobalScope it){
         for (Map.Entry<String, Ptr> entry: it.pointers.entrySet()) {
             data.add(new varGlobal(entry.getKey(), (globalVar) entry.getValue()));
-
+        }
+        for (var cString: it.globalString) {
+            rodata.add(new stringGlobal(cString.irName, cString.value));
+        }
+        for (Map.Entry<String, function> entry: it.irFunction.entrySet()) {
+            funcNum++;
+            curFunc = new ASMFunction(entry.getValue().irName);
+            entry.getValue().accept(this);
+            text.add(curFunc);
         }
     }
     @Override
-    public void visit(block it){}
+    public void visit(block it){
+        for (var iter: it.instructions) {
+            iter.accept(this);
+        }
+    }
     @Override
-    public void visit(function it){}
+    public void visit(function it){
+        for (var iter: it.blocks) {
+            curBlock = new ASMBlock(getLabel() + iter.lab);
+            curFunc.addBlock(curBlock);
+            iter.accept(this);
+        }
+    }
     @Override
     public void visit(AllocaInst it){}
     @Override
@@ -65,6 +87,16 @@ public class InstSelector implements IRVisitor {
         for (var op: data) {
             ans.append(op);
         }
+        ans.append("\t.section rodata\n");
+        for (var op: rodata) {
+            ans.append(op);
+        }
+        ans.append("\t.section text\n");
+        for (var op: text) {
+            ans.append(op);
+        }
         return ans.toString();
     }
+
+    private String getLabel() {return ".Lfunc" + funcNum + ".";}
 }

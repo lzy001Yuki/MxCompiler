@@ -1,5 +1,4 @@
-import java.io.FileInputStream;
-import java.io.InputStream;
+import java.io.*;
 
 import Assembly.InstSelector;
 import MIR.IRBuilder;
@@ -35,7 +34,8 @@ public class Main {
             checker.visit(root);
             IRBuilder irBuilder = new IRBuilder(globalScope);
             irBuilder.visit(root);
-            System.out.println(irBuilder);
+            var output = new PrintStream(new FileOutputStream("irOutput.txt"));
+            output.println(irBuilder);
             InstSelector selector = new InstSelector(globalScope);
             selector.visit(globalScope);
             System.out.println(selector);

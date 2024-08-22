@@ -1,5 +1,6 @@
 package MIR.Instruction;
 
+import MIR.IRVisitor;
 import MIR.irEntity.*;
 import MIR.type.ptrType;
 
@@ -32,5 +33,9 @@ public class BinaryInst extends Inst{
             case("^") : return "xor";
             default:throw new RuntimeException("invalid operation");
         }
+    }
+    @Override
+    public void accept(IRVisitor visitor) {
+        visitor.visit(this);
     }
 }

@@ -1,5 +1,6 @@
 package MIR.Instruction;
 
+import MIR.IRVisitor;
 import MIR.irEntity.Entity;
 import MIR.irEntity.function;
 import MIR.irEntity.localVar;
@@ -32,5 +33,9 @@ public class CallInst extends Inst{
         }
         ans.append(")");
         return ans.toString();
+    }
+    @Override
+    public void accept(IRVisitor visitor) {
+        visitor.visit(this);
     }
 }

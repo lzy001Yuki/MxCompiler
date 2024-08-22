@@ -1,5 +1,6 @@
 package MIR.Instruction;
 
+import MIR.IRVisitor;
 import MIR.irEntity.*;
 import MIR.type.IRType;
 
@@ -17,5 +18,10 @@ public class AllocaInst extends Inst{
     public String toString() {
         if (allocType != null) return "%" + result.irName + " = alloca " + this.allocType;
         else return "%" + result.irName + " = alloca %class." + this.className;
+    }
+
+    @Override
+    public void accept(IRVisitor visitor) {
+        visitor.visit(this);
     }
 }

@@ -1,5 +1,6 @@
 package MIR.Instruction;
 
+import MIR.IRVisitor;
 import MIR.irEntity.*;
 
 public class StoreInst extends Inst{
@@ -12,5 +13,9 @@ public class StoreInst extends Inst{
     @Override
     public String toString() {
         return "store "+value.type+" "+value.getName()+", ptr "+pointer.getName();
+    }
+    @Override
+    public void accept(IRVisitor visitor) {
+        visitor.visit(this);
     }
 }

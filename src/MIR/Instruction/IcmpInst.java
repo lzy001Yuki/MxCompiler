@@ -1,5 +1,6 @@
 package MIR.Instruction;
 
+import MIR.IRVisitor;
 import MIR.irEntity.*;
 
 public class IcmpInst extends Inst{
@@ -47,5 +48,9 @@ public class IcmpInst extends Inst{
             default: throw new RuntimeException("invalid operation");
         }
         return op;
+    }
+    @Override
+    public void accept(IRVisitor visitor) {
+        visitor.visit(this);
     }
 }

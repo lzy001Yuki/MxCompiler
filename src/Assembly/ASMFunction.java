@@ -12,6 +12,7 @@ public class ASMFunction extends Operand {
         this.name = name;
         blocks = new ArrayList<>();
     }
+    public void addBlock(ASMBlock it) {blocks.add(it);}
     @Override
     public String toString() {
         StringBuilder ans = new StringBuilder();

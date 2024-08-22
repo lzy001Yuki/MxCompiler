@@ -253,7 +253,8 @@ public class IRBuilder implements ASTVisitor {
         } else if (it.nullExpr != null) {
             it.entity = new constNull();
         } else if (it.strExpr != null) {
-            it.entity = new constString(rename(".str"), getStr(it.strExpr.value));
+            it.entity = new constString(rename("const.str"), getStr(it.strExpr.value));
+            globalScope.addString((constString) it.entity);
             globalScope.addBasicInst(new BasicInst(it.entity.toString()));
         } else if (it.id != null) {
             it.entity = currentScope.getPtrGlobally(it.id);
@@ -355,13 +356,15 @@ public class IRBuilder implements ASTVisitor {
         if (it.formatType) {
             it.value = getStr(it.value.substring(1, it.value.length() - 1));
             it.value = it.value.replace("$$", "$");
-            it.entity = new constString(rename(".str"), it.value);
+            it.entity = new constString(rename("const.str"), it.value);
+            globalScope.addString((constString) it.entity);
             globalScope.addBasicInst(new BasicInst(it.entity.toString()));
         } else {
             constString headStr = null;
             localVar localStr = null;
             if (it.head.length() > 3) {
-                headStr = new constString(rename(".str"), getStr(it.head.substring(1)).replace("$$", "$"));
+                headStr = new constString(rename("const.str"), getStr(it.head.substring(1)).replace("$$", "$"));
+                globalScope.addString(headStr);
                 globalScope.addBasicInst(new BasicInst(headStr.toString()));
                 localPtr ptr = new localPtr(new ptrType(headStr.type), generator.getName());
                 curBlock.addInst(new AllocaInst(ptr, ptr.type, null));
@@ -373,18 +376,22 @@ public class IRBuilder implements ASTVisitor {
             headExpr.accept(this);
             localStr = formatProcess(headExpr, localStr);
             for (int i = 0; i < it.middle.size(); i++) {
-                constString midStr = new constString(rename(".str"), getStr(it.middle.get(i)).replace("$$", "$"));
+                constString midStr = new constString(rename("const.str"), getStr(it.middle.get(i)).replace("$$", "$"));
+                globalScope.addString(midStr);
                 globalScope.addBasicInst(new BasicInst(midStr.toString()));
                 localStr = addConstString(midStr, localStr);
                 it.expr.get(i + 1).accept(this);
                 localStr = formatProcess(it.expr.get(i + 1), localStr);
             }
-            constString tailStr = new constString(rename(".str"), getStr(it.tail).replace("$$", "$"));
-            localStr = addConstString(tailStr, localStr);
+            if (it.tail.length() > 2) {
+                constString tailStr = new constString(rename("const.str"), getStr(it.tail).replace("$$", "$"));
+                localStr = addConstString(tailStr, localStr);
+                globalScope.addString(tailStr);
+                globalScope.addBasicInst(new BasicInst(tailStr.toString()));
+            }
             it.entity = new localPtr(new ptrType(new stringType()), generator.getName());
             curBlock.addInst(new AllocaInst((Ptr)it.entity, it.entity.type, null));
             curBlock.addInst(new StoreInst(localStr, it.entity));
-            globalScope.addBasicInst(new BasicInst(tailStr.toString()));
         }
     }
 
@@ -434,13 +441,15 @@ public class IRBuilder implements ASTVisitor {
             curBlock.addInst(inst);
             curBlock = new block(trueStr, curFunc);
             curFunc.addBlock(curBlock);
-            constString trueConst = new constString(rename(".str"), "true");
+            constString trueConst = new constString(rename("const.str"), "true");
+            globalScope.addString(trueConst);
             globalScope.addBasicInst(new BasicInst(trueConst.toString()));
             localVar trueVar = addConstString(trueConst, ptr);
             curBlock.addInst(new BrInst(null, endStr, null));
             curBlock = new block(falseStr, curFunc);
             curFunc.addBlock(curBlock);
-            constString falseConst = new constString(rename(".str"), "false");
+            constString falseConst = new constString(rename("const.str"), "false");
+            globalScope.addString(falseConst);
             globalScope.addBasicInst(new BasicInst(falseConst.toString()));
             localVar falseVar = addConstString(falseConst, ptr);
             curBlock.addInst(new BrInst(null, endStr, null));
@@ -714,14 +723,14 @@ public class IRBuilder implements ASTVisitor {
     }
     @Override
     public void visit(breakStatNode it){
-        while (!currentScope.isLoopScope && currentScope != null) {
+        while (currentScope != null && !currentScope.isLoopScope) {
             currentScope = currentScope.parentScope;
         }
         currentScope.flag = false;
     }
     @Override
     public void visit(continueStatNode it){
-        while (!currentScope.isLoopScope && currentScope != null) {
+        while (currentScope != null && !currentScope.isLoopScope) {
             currentScope = currentScope.parentScope;
         }
         currentScope.flag = true;
