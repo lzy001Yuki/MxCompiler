@@ -1,6 +1,7 @@
 import java.io.FileInputStream;
 import java.io.InputStream;
 
+import Assembly.InstSelector;
 import MIR.IRBuilder;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -15,7 +16,8 @@ import utils.Scope.GlobalScope;
 // pass: e bubble quick selection t1-74
 public class Main {
     public static void main(String[] args) throws Exception {
-        InputStream input = System.in;
+        //InputStream input = System.in;
+        var input = new FileInputStream("test.txt");
         try{
             GlobalScope globalScope = new GlobalScope();
             MxLexer lexer = new MxLexer(CharStreams.fromStream(input));
@@ -34,6 +36,9 @@ public class Main {
             IRBuilder irBuilder = new IRBuilder(globalScope);
             irBuilder.visit(root);
             System.out.println(irBuilder);
+            InstSelector selector = new InstSelector(globalScope);
+            selector.visit(globalScope);
+            System.out.println(selector);
         } catch (Error error) {
             System.out.println(error.toString());
             System.exit(1);

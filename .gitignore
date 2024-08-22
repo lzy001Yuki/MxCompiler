@@ -37,3 +37,7 @@ gen
 llvm.sh
 order
 tmp
+riscv-spec-20191213.pdf
+llvm.sh.1
+output.s
+irOutput.txt
