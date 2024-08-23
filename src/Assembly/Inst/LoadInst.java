@@ -12,6 +12,6 @@ public class LoadInst extends ASMInst{
     }
     @Override
     public String toString() {
-        return loadType + " " + rd + ", " + offset + "(" + rs1 + ")\n";
+        return '\t' +loadType + " " + rd + ", " + offset + "(" + rs1 + ")\n";
     }
 }

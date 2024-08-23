@@ -4,13 +4,13 @@ import Assembly.ASMBlock;
 import Assembly.Operand.*;
 
 public class BeqzInst extends ASMInst{
-    public ASMBlock dest;
-    public BeqzInst(Reg rs, ASMBlock lab) {
+    public String dest;
+    public BeqzInst(Reg rs, String lab) {
         super(rs, null, null);
         dest = lab;
     }
     @Override
     public String toString() {
-        return "beqz " + rs1 + ", " + dest.label + '\n';
+        return "\tbeqz " + rs1 + ", " + dest + '\n';
     }
 }

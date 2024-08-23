@@ -1,5 +1,6 @@
 package MIR.Instruction;
 
+import Assembly.Operand.Operand;
 import MIR.IRVisitor;
 import MIR.irEntity.Entity;
 import MIR.type.IRType;

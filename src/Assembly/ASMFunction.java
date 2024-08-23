@@ -22,7 +22,7 @@ public class ASMFunction extends Operand {
         for (var block: blocks) {
             ans.append(block);
         }
-        ans.append('\n');
+        ans.append("\n\n");
         return ans.toString();
     }
 }

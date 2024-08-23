@@ -8,6 +8,6 @@ public class MvInst extends ASMInst{
     }
     @Override
     public String toString() {
-        return "mv " + rd + ", " + rs1 + '\n';
+        return "\tmv " + rd + ", " + rs1 + '\n';
     }
 }

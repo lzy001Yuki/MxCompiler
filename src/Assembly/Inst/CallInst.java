@@ -8,6 +8,6 @@ public class CallInst extends ASMInst{
     }
     @Override
     public String toString() {
-        return "call " + funcLabel + '\n';
+        return "\tcall " + funcLabel + '\n';
     }
 }

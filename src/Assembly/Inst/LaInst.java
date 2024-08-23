@@ -11,6 +11,6 @@ public class LaInst extends ASMInst{
     }
     @Override
     public String toString() {
-        return "la " + rd + ", " + symbol + '\n';
+        return "\tla " + rd + ", " + symbol + '\n';
     }
 }

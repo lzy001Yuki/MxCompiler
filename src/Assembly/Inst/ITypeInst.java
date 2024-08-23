@@ -13,6 +13,6 @@ public class ITypeInst extends ASMInst {
     }
     @Override
     public String toString() {
-        return op + " " + rd + ", " + rs1 + ", " + imm + "\n";
+        return '\t' + op + " " + rd + ", " + rs1 + ", " + imm + "\n";
     }
 }

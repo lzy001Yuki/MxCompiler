@@ -12,6 +12,6 @@ public class StoreInst extends ASMInst{
     }
     @Override
     public String toString() {
-        return storeType + " " + rs2 + ", " + offset + "(" + rs1 + ")\n";
+        return '\t' +storeType + " " + rs2 + ", " + offset + "(" + rs1 + ")\n";
     }
 }

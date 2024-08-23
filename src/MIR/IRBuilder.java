@@ -133,7 +133,7 @@ public class IRBuilder implements ASTVisitor {
         }
         DataType preType = new DataType(it.type);
         localPtr malloc_ptr = new localPtr(IRType.dataToIR(preType), rename("malloc_ptr"));
-        CallInst inst1 = new CallInst(callFunc, malloc_ptr.irName);
+        CallInst inst1 = new CallInst(callFunc, malloc_ptr);
         Entity indexVar  = loadPtr(it.indexList.getFirst().entity);
         inst1.para.add(calLength(indexVar));
         curBlock.addInst(inst1);
@@ -699,14 +699,14 @@ public class IRBuilder implements ASTVisitor {
         function malloc_ = globalScope.getIrFunction("_malloc_");
         function func = new function(malloc_.irName, malloc_.type, false, null);
         classDefNode obj = globalScope.getClass(it.type.typeName);
-        CallInst inst = new CallInst(func, it.entity.irName);
+        CallInst inst = new CallInst(func, it.entity);
         inst.para.add(new constInt(obj.varMap.size() * 4));
         curBlock.addInst(inst);
         function constr = globalScope.getIrFunction(it.type.typeName + "." + it.type.typeName);
         if (constr != null) {
             function copy_cons = new function(constr.irName, constr.type, false, constr.className);
             copy_cons.addPara(it.entity);
-            CallInst inst2 = new CallInst(copy_cons, null);
+            CallInst inst2 = new CallInst(copy_cons, "void_return");
             curBlock.addInst(inst2);
         }
     }
@@ -947,7 +947,7 @@ public class IRBuilder implements ASTVisitor {
         curBlock = new block("entry", curFunc);
         curFunc.addBlock(curBlock);
         function init_ = globalScope.getIrFunction("global_init");
-        CallInst inst = new CallInst(init_, null);
+        CallInst inst = new CallInst(init_, "void_return");
         curBlock.addInst(inst);
         it.blockStat.accept(this);
         if (it.blockStat.statList.isEmpty() || !(it.blockStat.statList.getLast() instanceof returnStatNode)) {

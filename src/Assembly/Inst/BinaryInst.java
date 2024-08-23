@@ -10,6 +10,7 @@ public class BinaryInst extends ASMInst{
     }
     @Override
     public String toString() {
-        return op + " " + rd + ", " + rs1 + ", " + rs2 + '\n';
+        if (rs2 != null) return '\t' + op + " " + rd + ", " + rs1 + ", " + rs2 + '\n';
+        else return '\t' + op + " " + rd + ", " + rs1 + '\n';
     }
 }

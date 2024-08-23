@@ -11,6 +11,6 @@ public class LiInst extends ASMInst{
     }
     @Override
     public String toString() {
-        return "li " + rd + ", " + imm + '\n';
+        return "\tli " + rd + ", " + imm + '\n';
     }
 }

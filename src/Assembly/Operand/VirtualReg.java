@@ -1,13 +1,15 @@
 package Assembly.Operand;
 
+// store address(relative to s0, actually points to the address)
 public class VirtualReg extends Reg{
-    static int cnt = 0;
-    public int index = 0;
+    public int index;
+    public static int cnt = 0;
     public VirtualReg() {
-        index = cnt++;
+        index = cnt;
+        cnt++;
     }
     @Override
     public String toString() {
-        return "vr" + index;
+        return "%" + index;
     }
 }
