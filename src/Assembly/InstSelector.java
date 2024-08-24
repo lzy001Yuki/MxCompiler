@@ -23,34 +23,31 @@ import MIR.type.*;
 
 public class InstSelector implements IRVisitor {
     public Scope globalScope;
-    public ArrayList<Operand> data;
-    public ArrayList<Operand> text;
-    public ArrayList<Operand> rodata;
     public ASMBlock curBlock;
     public ASMFunction curFunc;
     public int funcNum = 0;
     public RegStore regs;
+    public ASMProgram asmProgram;
 
     public InstSelector(GlobalScope global) {
         globalScope = global;
-        data = new ArrayList<>();
-        text = new ArrayList<>();
-        rodata = new ArrayList<>();
+        asmProgram = new ASMProgram();
         regs = new RegStore();
     }
     @Override
     public void visit(GlobalScope it){
         for (Map.Entry<String, Ptr> entry: it.pointers.entrySet()) {
-            data.add(new varGlobal(entry.getKey(), (globalVar) entry.getValue()));
+            asmProgram.data.add(new varGlobal(entry.getKey(), (globalVar) entry.getValue()));
         }
         for (var cString: it.globalString) {
-            rodata.add(new stringGlobal(cString.irName, cString.value));
+            asmProgram.rodata.add(new stringGlobal(cString.irName, cString.value));
         }
         for (Map.Entry<String, function> entry: it.irFunction.entrySet()) {
             funcNum++;
             curFunc = new ASMFunction(entry.getValue().irName);
-            text.add(curFunc);
+            asmProgram.text.add(curFunc);
             entry.getValue().accept(this);
+            curFunc.virtualNum = VirtualReg.cnt;
         }
     }
     @Override
@@ -61,6 +58,7 @@ public class InstSelector implements IRVisitor {
     }
     @Override
     public void visit(function it){
+        VirtualReg.cnt = 0;
         for (var iter: it.blocks) {
             curBlock = new ASMBlock(getLabel() + iter.lab);
             curFunc.addBlock(curBlock);
@@ -124,8 +122,10 @@ public class InstSelector implements IRVisitor {
         curBlock.addInst(new ITypeInst("addi", regs.getPhyReg("sp"), regs.getPhyReg("sp"), new Imm(reserveSpace)));
         curBlock.addInst(new CallInst(it.funcName));
         curBlock.addInst(new ITypeInst("addi", regs.getPhyReg("sp"), regs.getPhyReg("sp"), new Imm(-reserveSpace)));
-        it.ret.operand = new VirtualReg();
-        curBlock.addInst(new MvInst((regs.getPhyReg("a0")), (Reg) it.ret.operand));
+        if (!(it.ret.type instanceof voidType)) {
+            it.ret.operand = new VirtualReg();
+            curBlock.addInst(new MvInst((regs.getPhyReg("a0")), (Reg) it.ret.operand));
+        }
         curBlock.addInst(new LoadInst("lw", regs.getPhyReg("ra"), regs.getPhyReg("sp"), new Imm(-4)));
     }
     @Override
@@ -178,7 +178,7 @@ public class InstSelector implements IRVisitor {
         curBlock.addInst(new Comment(it.toString()));
         it.result.operand = new VirtualReg();
         Reg pointerReg = (Reg) it.pointer.operand;
-        if (it.pointer instanceof globalVar) {
+        if (it.pointer instanceof globalVar || it.pointer instanceof constString) {
             pointerReg = new VirtualReg();
             curBlock.addInst(new LaInst(pointerReg, it.pointer.irName));
         }
@@ -210,7 +210,7 @@ public class InstSelector implements IRVisitor {
             return;
         }
         Reg dest = getVirReg(it.retType);
-        curBlock.addInst(new MvInst(regs.getPhyReg("a0"), dest));
+        curBlock.addInst(new MvInst(dest, regs.getPhyReg("a0")));
         curBlock.addInst(new RetInst());
     }
     @Override
@@ -218,28 +218,11 @@ public class InstSelector implements IRVisitor {
         curBlock.addInst(new Comment(it.toString()));
         Reg dest = getVirReg(it.value);
         Reg pointerReg = (Reg) it.pointer.operand;
-        if (it.pointer instanceof globalVar) {
+        if (it.pointer instanceof globalVar || it.pointer instanceof constString) {
             pointerReg = new VirtualReg();
             curBlock.addInst(new LaInst(pointerReg, it.pointer.irName));
         }
         curBlock.addInst(new StoreInst("sw", dest, pointerReg, new Imm(0)));
-    }
-    @Override
-    public String toString() {
-        StringBuilder ans = new StringBuilder();
-        ans.append("\t.section data\n");
-        for (var op: data) {
-            ans.append(op);
-        }
-        ans.append("\t.section rodata\n");
-        for (var op: rodata) {
-            ans.append(op);
-        }
-        ans.append("\t.section text\n");
-        for (var op: text) {
-            ans.append(op);
-        }
-        return ans.toString();
     }
 
     private String getLabel() {return ".Lfunc" + funcNum + ".";}
@@ -248,6 +231,10 @@ public class InstSelector implements IRVisitor {
         if (it.isConstValue()) {
             Reg tmp = new VirtualReg();
             curBlock.addInst(new LiInst(tmp, new Imm(it)));
+            return tmp;
+        } else if (it instanceof globalVar || it instanceof constString) {
+            Reg tmp = new VirtualReg();
+            curBlock.addInst(new LaInst(tmp, it.irName));
             return tmp;
         } else return (Reg) it.operand;
     }

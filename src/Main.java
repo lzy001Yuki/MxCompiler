@@ -1,6 +1,7 @@
 import java.io.*;
 
 import Assembly.InstSelector;
+import Assembly.RegAllocator;
 import MIR.IRBuilder;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -38,7 +39,9 @@ public class Main {
             output.println(irBuilder);
             InstSelector selector = new InstSelector(globalScope);
             selector.visit(globalScope);
-            System.out.println(selector);
+            RegAllocator regAllocator = new RegAllocator(selector.asmProgram);
+            regAllocator.run();
+            System.out.println(regAllocator);
         } catch (Error error) {
             System.out.println(error.toString());
             System.exit(1);

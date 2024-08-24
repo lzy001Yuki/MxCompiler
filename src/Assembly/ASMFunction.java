@@ -1,5 +1,6 @@
 package Assembly;
 
+import Assembly.Inst.ASMInst;
 import Assembly.Operand.Operand;
 
 import java.util.ArrayList;
@@ -7,12 +8,19 @@ import java.util.ArrayList;
 public class ASMFunction extends Operand {
     public String name;
     public ArrayList<ASMBlock> blocks;
-    int paraSpace = 0, allocSpace = 0, totalSpace = 0;
+    public int virtualNum = 0;
+    public int allocSpace = 0;
     public ASMFunction(String name) {
         this.name = name;
         blocks = new ArrayList<>();
     }
     public void addBlock(ASMBlock it) {blocks.add(it);}
+    public void addLast(ASMInst it) {
+        blocks.getLast().inst.add(blocks.getFirst().inst.size() - 1, it);
+    }
+    public void addFirst(ASMInst it) {
+        blocks.getFirst().inst.addFirst(it);
+    }
     @Override
     public String toString() {
         StringBuilder ans = new StringBuilder();
