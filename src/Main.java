@@ -44,9 +44,9 @@ public class Main {
 //            output2.println(selector.asmProgram);
             RegAllocator regAllocator = new RegAllocator(selector.asmProgram);
             regAllocator.run();
-            //var output1 = new PrintStream(new FileOutputStream("tmp/test.s"));
-            //output1.println(regAllocator);
-            String filePath = "builtin/builtin.s";
+//            var output1 = new PrintStream(new FileOutputStream("tmp/test.s"));
+//            output1.println(regAllocator);
+            String filePath = "../src/builtin/builtin.s";
             PrintStream outputStream = System.out;
             printFileToOutputStream(filePath, outputStream);
             System.out.println(regAllocator);

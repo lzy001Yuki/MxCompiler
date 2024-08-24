@@ -67,20 +67,41 @@ public class RegAllocator {
         if (it.rs1 instanceof VirtualReg) {
             int location = ((VirtualReg) it.rs1).index * 4 + allocSpace;
             phyRs1 = getIdleReg();
-            allocateInsts.add(new LoadInst("lw", phyRs1, regs.getPhyReg("sp"), new Imm(location)));
+            if (location < 2048) allocateInsts.add(new LoadInst("lw", phyRs1, regs.getPhyReg("sp"), new Imm(location)));
+            else {
+                PhysicReg tmp = getIdleReg();
+                allocateInsts.add(new LiInst(tmp, new Imm(location)));
+                allocateInsts.add(new BinaryInst("add", tmp, tmp, regs.getPhyReg("sp")));
+                allocateInsts.add(new LoadInst("lw", phyRs1, tmp, new Imm(0)));
+                setIdle(tmp);
+            }
             it.rs1 = phyRs1;
         }
         if (it.rs2 instanceof VirtualReg) {
             int location = ((VirtualReg) it.rs2).index * 4 + allocSpace;
             phyRs2 = getIdleReg();
-            allocateInsts.add(new LoadInst("lw", phyRs2, regs.getPhyReg("sp"), new Imm(location)));
+            if (location < 2048) allocateInsts.add(new LoadInst("lw", phyRs2, regs.getPhyReg("sp"), new Imm(location)));
+            else {
+                PhysicReg tmp = getIdleReg();
+                allocateInsts.add(new LiInst(tmp, new Imm(location)));
+                allocateInsts.add(new BinaryInst("add", tmp, tmp, regs.getPhyReg("sp")));
+                allocateInsts.add(new LoadInst("lw", phyRs2, tmp, new Imm(0)));
+                setIdle(tmp);
+            }
             it.rs2 = phyRs2;
         }
         allocateInsts.add(it);
         if (it.rd instanceof VirtualReg) {
             int location = ((VirtualReg) it.rd).index * 4 + allocSpace;
             phyRd = getIdleReg();
-            allocateInsts.add(new StoreInst("sw", phyRd, regs.getPhyReg("sp"), new Imm(location)));
+            if (location < 2048) allocateInsts.add(new StoreInst("sw", phyRd, regs.getPhyReg("sp"), new Imm(location)));
+            else {
+                PhysicReg tmp = getIdleReg();
+                allocateInsts.add(new LiInst(tmp, new Imm(location)));
+                allocateInsts.add(new BinaryInst("add", tmp, tmp, regs.getPhyReg("sp")));
+                allocateInsts.add(new StoreInst("sw", phyRd, tmp, new Imm(0)));
+                setIdle(tmp);
+            }
             it.rd = phyRd;
         }
         setIdle(phyRs1);
