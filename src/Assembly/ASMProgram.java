@@ -18,15 +18,15 @@ public class ASMProgram {
     @Override
     public String toString() {
         StringBuilder ans = new StringBuilder();
-        ans.append("\t.section data\n");
+        ans.append("\t.data\n");
         for (var op : data) {
             ans.append(op);
         }
-        ans.append("\t.section rodata\n");
+        ans.append("\t.rodata\n");
         for (var op : rodata) {
             ans.append(op);
         }
-        ans.append("\t.section text\n");
+        ans.append("\t.text\n");
         for (var op : text) {
             ans.append(op);
         }

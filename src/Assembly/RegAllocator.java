@@ -27,9 +27,14 @@ public class RegAllocator {
         for (var func: program.text) {
             allocSpace = func.allocSpace;
             usedRegNum = 0;
+            idleReg.clear();
+            ArrayList<ASMBlock> retInsts = new ArrayList<>();
             for (var block: func.blocks) {
                 for (var inst: block.inst) {
                     allocate(inst);
+                    if (inst instanceof Assembly.Inst.RetInst) {
+                        retInsts.add(block);
+                    }
                 }
                 block.inst = allocateInsts;
                 allocateInsts = new LinkedList<>();
@@ -42,8 +47,11 @@ public class RegAllocator {
                 totalSpace += 4;
             }
             int stackSpace = (totalSpace + 15) / 16 * 16;
-            func.addLast(new ITypeInst("addi", regs.getPhyReg("sp"), regs.getPhyReg("sp"), new Imm(stackSpace)));
-            func.addFirst(new ITypeInst("addi", regs.getPhyReg("sp"), regs.getPhyReg("sp"), new Imm(stackSpace)));
+            ITypeInst in = new ITypeInst("addi", regs.getPhyReg("sp"), regs.getPhyReg("sp"), new Imm(stackSpace));
+            for (var retBlock: retInsts) {
+                retBlock.inst.add(retBlock.inst.size() - 1, in);
+            }
+            func.addFirst(new ITypeInst("addi", regs.getPhyReg("sp"), regs.getPhyReg("sp"), new Imm(-stackSpace)));
             func.addFirst(new MvInst(regs.getPhyReg("sp"), regs.getPhyReg("s0")));
         }
     }

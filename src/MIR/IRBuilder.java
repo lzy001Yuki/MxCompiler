@@ -329,7 +329,7 @@ public class IRBuilder implements ASTVisitor {
             else func = globalScope.getIrFunction("string." + IcmpInst.advertCmp(it.opStr));
             function callFunc = new function(func.irName, func.type, false, null);
             it.entity = new localVar(func.type, generator.getName());
-            CallInst inst = new CallInst(callFunc, it.entity.irName);
+            CallInst inst = new CallInst(callFunc, it.entity);
             if (!it.lhs.entity.isConst() && !(it.lhs instanceof funcExprNode)) inst.para.add(loadPtr(it.lhs.entity));
             else inst.para.add(it.lhs.entity);
             if (it.rhs.entity.isConst() || (it.rhs instanceof funcExprNode)) inst.para.add(it.rhs.entity);
@@ -610,23 +610,23 @@ public class IRBuilder implements ASTVisitor {
         curBlock.addInst(inst1);
         curBlock = new block(firStr, curFunc);
         curFunc.addBlock(curBlock);
-        Pair<Entity, String> br1;
+        Pair<Entity, String> br1 = null;
         if (it.expr2 instanceof ternaryExprNode) br1 = ternaryProcess((ternaryExprNode) it.expr2);
         else {
             it.expr2.accept(this);
-            br1 = new Pair<>(it.expr2.entity, firStr);
         }
         it.expr2.entity = loadPtr(it.expr2.entity);
+        if (!(it.expr2 instanceof ternaryExprNode)) br1 = new Pair<>(it.expr2.entity, firStr);
         curBlock.addInst(new BrInst(null, endStr, null));
         curBlock = new block(secStr, curFunc);
         curFunc.addBlock(curBlock);
-        Pair<Entity, String> br2;
+        Pair<Entity, String> br2 = null;
         if (it.expr3 instanceof ternaryExprNode) br2 = ternaryProcess((ternaryExprNode) it.expr3);
         else {
             it.expr3.accept(this);
-            br2 = new Pair<>(it.expr3.entity, secStr);
         }
         it.expr3.entity = loadPtr(it.expr3.entity);
+        if (!(it.expr3 instanceof ternaryExprNode)) br2 = new Pair<>(it.expr3.entity, secStr);
         curBlock.addInst(new BrInst(null, endStr, null));
         curBlock = new block(endStr, curFunc);
         curFunc.addBlock(curBlock);

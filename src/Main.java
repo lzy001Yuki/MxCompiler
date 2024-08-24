@@ -13,11 +13,12 @@ import parser.MxParser;
 import parser.MxLexer;
 import utils.MxErrorListener;
 import utils.Scope.GlobalScope;
-// pass: e bubble quick selection t1-74
+// pass: e bubble quick_sort selection_sort t2 t5-11 t13-16 t20 t22-23 t25-30 t32-59 t62 t66 t68-70 t72-74
 public class Main {
     public static void main(String[] args) throws Exception {
-        //InputStream input = System.in;
-        var input = new FileInputStream("test.txt");
+        InputStream input = System.in;
+        //var input = new FileInputStream("Compiler-Design-Implementation/testcases/codegen/e5.mx");
+        //var input = new FileInputStream("test.txt");
         try{
             GlobalScope globalScope = new GlobalScope();
             MxLexer lexer = new MxLexer(CharStreams.fromStream(input));
@@ -39,8 +40,12 @@ public class Main {
             output.println(irBuilder);
             InstSelector selector = new InstSelector(globalScope);
             selector.visit(globalScope);
+            var output2 = new PrintStream(new FileOutputStream("asm.txt"));
+            output2.println(selector.asmProgram);
             RegAllocator regAllocator = new RegAllocator(selector.asmProgram);
             regAllocator.run();
+            //var output1 = new PrintStream(new FileOutputStream("tmp/test.s"));
+            //output1.println(regAllocator);
             System.out.println(regAllocator);
         } catch (Error error) {
             System.out.println(error.toString());

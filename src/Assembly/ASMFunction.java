@@ -16,7 +16,7 @@ public class ASMFunction extends Operand {
     }
     public void addBlock(ASMBlock it) {blocks.add(it);}
     public void addLast(ASMInst it) {
-        blocks.getLast().inst.add(blocks.getFirst().inst.size() - 1, it);
+        blocks.getLast().inst.add(blocks.getLast().inst.size() - 1, it);
     }
     public void addFirst(ASMInst it) {
         blocks.getFirst().inst.addFirst(it);
