@@ -8,10 +8,7 @@ public abstract class IRType {
     public IRType(String str) {
         if (str.equals("void")) typeName = "void";
         else if (str.equals("ptr")) typeName = "ptr";
-        else if (str.charAt(0) == 'i') {
-            typeName = str; //i1 refers to bool type
-            bit_width = Integer.parseInt(str.substring(1));
-        } else typeName = str; // classType
+        else typeName = str;
     }
     public IRType(IRType obj) {
         typeName = obj.typeName;

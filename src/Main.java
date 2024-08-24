@@ -53,7 +53,7 @@ public class Main {
         } catch (Error error) {
             System.out.println(error.toString());
             System.exit(1);
-        }
+        } catch (RuntimeException ex) {System.exit(0);}
         System.exit(0);
     }
     public static void printFileToOutputStream(String filePath, PrintStream outputStream) {
