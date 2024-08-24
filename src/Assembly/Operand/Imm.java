@@ -5,7 +5,7 @@ import MIR.irEntity.constBool;
 import MIR.irEntity.constInt;
 
 public class Imm extends Operand{
-    int value = 0;
+    public int value = 0;
     public Imm(int val) {
         value = val;
     }
