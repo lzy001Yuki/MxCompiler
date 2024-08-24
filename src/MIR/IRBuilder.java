@@ -33,6 +33,7 @@ public class IRBuilder implements ASTVisitor {
     public HashMap<String, Integer> varRename = null;
     public anonyName generator = new anonyName();
     public function init_;
+    public localPtr thisPtr = null;
     public IRBuilder(GlobalScope global) {
         globalScope = global;
         currentScope = global;
@@ -176,7 +177,7 @@ public class IRBuilder implements ASTVisitor {
         localPtr malloc_ptr = new localPtr(new ptrType(new ptrType()), rename("malloc_ptr"));
         function func = globalScope.getIrFunction("_malloc_");
         function callFunc = new function(func.irName, func.type, false, null);
-        CallInst inst8 = new CallInst(callFunc, malloc_ptr.irName);
+        CallInst inst8 = new CallInst(callFunc, malloc_ptr);
         Entity indexVar = loadPtr(array.get(array.size() - dim).entity);
         inst8.para.add(calLength(indexVar));
         curBlock.addInst(inst8);
@@ -275,7 +276,7 @@ public class IRBuilder implements ASTVisitor {
                 it.entity = new function(func.irName, func.type, false, func.className);
             }
         } else if (it.thisExpr != null) {
-            it.entity = new localPtr(new ptrType(new classType(it.thisExpr.type.typeName)), "this_ptr");
+            it.entity = thisPtr;
         } else if (it.formatExpr != null) {
             it.formatExpr.accept(this);
             it.entity = it.formatExpr.entity;
@@ -405,7 +406,7 @@ public class IRBuilder implements ASTVisitor {
         function func1 = globalScope.getIrFunction("string.add");
         function callFunc1 = new function(func1.irName, func1.type, false, null);
         localVar res = new localVar(ptr.type, generator.getName());
-        CallInst inst1 = new CallInst(callFunc1, res.irName);
+        CallInst inst1 = new CallInst(callFunc1, res);
         inst1.para.add(ptr);
         inst1.para.add(vari);
         curBlock.addInst(inst1);
@@ -417,14 +418,14 @@ public class IRBuilder implements ASTVisitor {
             function func = globalScope.getIrFunction("toString");
             function callFunc = new function(func.irName, func.type, false, null);
             localVar toStr = new localVar(new ptrType(new stringType()), generator.getName());
-            CallInst inst = new CallInst(callFunc, toStr.irName);
+            CallInst inst = new CallInst(callFunc, toStr);
             inst.para.add(loadPtr(expr.entity));
             curBlock.addInst(inst);
             if (ptr != null) {
                 function func1 = globalScope.getIrFunction("string.add");
                 function callFunc1 = new function(func1.irName, func1.type, false, null);
                 res = new localVar(ptr.type, generator.getName());
-                CallInst inst1 = new CallInst(callFunc1, res.irName);
+                CallInst inst1 = new CallInst(callFunc1, res);
                 inst1.para.add(ptr);
                 inst1.para.add(toStr);
                 curBlock.addInst(inst1);
@@ -466,7 +467,7 @@ public class IRBuilder implements ASTVisitor {
                 function func = globalScope.getIrFunction("string.add");
                 function callFunc = new function(func.irName, func.type, false, null);
                 res = new localVar(ptr.type, generator.getName());
-                CallInst inst = new CallInst(callFunc, res.irName);
+                CallInst inst = new CallInst(callFunc, res);
                 inst.para.add(ptr);
                 inst.para.add(loadPtr(expr.entity));
                 curBlock.addInst(inst);
@@ -483,7 +484,7 @@ public class IRBuilder implements ASTVisitor {
         CallInst inst = new CallInst((function) it.exprNode.entity, generator.getName());
         if (!(it.exprNode instanceof memberExprNode)) {
             if (curFunc.isMember && curFunc.className.equals(((function) it.exprNode.entity).className))
-                inst.para.add(curFunc.paraList.getFirst());
+                inst.para.add(loadPtr(thisPtr));
         }
         for (var para: it.paraList) {
             para.accept(this);
@@ -700,6 +701,7 @@ public class IRBuilder implements ASTVisitor {
         function func = new function(malloc_.irName, malloc_.type, false, null);
         classDefNode obj = globalScope.getClass(it.type.typeName);
         CallInst inst = new CallInst(func, it.entity);
+        if (currentScope.isInClass() == null) thisPtr = new localPtr(new localPtr(new classType(it.type.typeName), "this").type, "this_ptr");
         inst.para.add(new constInt(obj.varMap.size() * 4));
         curBlock.addInst(inst);
         function constr = globalScope.getIrFunction(it.type.typeName + "." + it.type.typeName);
@@ -865,13 +867,14 @@ public class IRBuilder implements ASTVisitor {
     public void visit(classDefNode it){
         currentScope = new ClassScope(currentScope);
         currentScope.className = it.className;
+        thisPtr = new localPtr(new localPtr(new classType(it.className), "this").type, "this_ptr");
         for (Map.Entry<String, Pair<Integer, varDefAtomNode>> entry: it.varMap.entrySet()) {
             varDefAtomNode value = entry.getValue().getSecond();
             int dim = value.type.arrayDim;
             memberPtr mPtr = new memberPtr(IRType.dataToIR(value.type), value.varName, it.className, entry.getValue().getFirst());
             value.type.arrayDim = dim;
             if (dim != 0) value.type.isArray = true;
-            mPtr.parent = new localPtr(new localPtr(new classType(it.className), "this").type, "this_ptr");
+            mPtr.parent = thisPtr;
             currentScope.addPtr(value.varName, mPtr);
         }
         if (it.constructor != null) {
@@ -888,6 +891,7 @@ public class IRBuilder implements ASTVisitor {
         }
         curFunc = init_;
         curBlock = init_.blocks.getLast();
+        thisPtr = null;
         currentScope = currentScope.parentScope;
     }
     @Override
@@ -896,7 +900,7 @@ public class IRBuilder implements ASTVisitor {
         curBlock = new block("entry", curFunc);
         curFunc = new function(it.className + "." + it.className, new voidType(), true, it.className);
         curFunc.addBlock(curBlock);
-        localPtr ptr = new localPtr(curFunc.paraList.getFirst().type, "this_ptr");
+        localPtr ptr = thisPtr;
         curBlock.addInst(new AllocaInst(ptr, new ptrType(), null));
         curBlock.addInst(new StoreInst(curFunc.paraList.getFirst(), ptr));
         it.blockStat.accept(this);
@@ -907,7 +911,7 @@ public class IRBuilder implements ASTVisitor {
     public void visit(funcDefNode it){
         currentScope = new FuncScope(currentScope, it.returnType);
         if (curFunc.isMember) {
-            localPtr ptr = new localPtr(curFunc.paraList.getFirst().type, "this_ptr");
+            localPtr ptr = thisPtr;
             curBlock.addInst(new AllocaInst(ptr, new ptrType(), null));
             curBlock.addInst(new StoreInst(curFunc.paraList.getFirst(), ptr));
         }

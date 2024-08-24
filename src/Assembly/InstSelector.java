@@ -207,12 +207,12 @@ public class InstSelector implements IRVisitor {
         Reg mid = new VirtualReg();
         Reg newReg1 = judgeReg(it.jump.get(0).getFirst());
         Reg newReg2 = judgeReg(it.jump.get(1).getFirst());
-        preBlock1.inst.addFirst(new StoreInst("sw", newReg1, mid, new Imm(0)));
-        addVirReg(it.jump.get(0).getFirst(), newReg1, preBlock1);
-        preBlock2.inst.addFirst(new StoreInst("sw", newReg2, mid, new Imm(0)));
+        preBlock1.inst.add(preBlock1.inst.size() - 1, new ITypeInst("addi", regs.getPhyReg("sp"), mid, new Imm(curFunc.allocSpace)));
+        preBlock2.inst.add(preBlock2.inst.size() - 1, new ITypeInst("addi", regs.getPhyReg("sp"), mid, new Imm(curFunc.allocSpace)));
         addVirReg(it.jump.get(1).getFirst(), newReg2, preBlock2);
-        preBlock1.inst.addFirst(new ITypeInst("addi", regs.getPhyReg("sp"), mid, new Imm(curFunc.allocSpace)));
-        preBlock2.inst.addFirst(new ITypeInst("addi", regs.getPhyReg("sp"), mid, new Imm(curFunc.allocSpace)));
+        addVirReg(it.jump.get(0).getFirst(), newReg1, preBlock1);
+        preBlock2.inst.add(preBlock2.inst.size() - 1, new StoreInst("sw", newReg2, mid, new Imm(0)));
+        preBlock1.inst.add(preBlock1.inst.size() - 1, new StoreInst("sw", newReg1, mid, new Imm(0)));
         curFunc.allocSpace += 4;
         Reg mid1 = new VirtualReg();
         curBlock.addInst(new LoadInst("lw", mid1, mid, new Imm(0)));
@@ -252,21 +252,25 @@ public class InstSelector implements IRVisitor {
             Reg tmp = new VirtualReg();
             curBlock.addInst(new LaInst(tmp, it.irName));
             return tmp;
+        } else if (it instanceof constNull) {
+            Reg tmp = new VirtualReg();
+            curBlock.addInst(new LiInst(tmp, new Imm(0)));
+            return tmp;
         } else return (Reg) it.operand;
     }
 
     private Reg judgeReg(Entity it) {
-        if (it.isConstValue() || it instanceof globalVar || it instanceof constString) {
+        if (it.isConstValue() || it instanceof globalVar || it instanceof constString || it instanceof constNull) {
             return new VirtualReg();
         } else return (Reg) it.operand;
     }
 
     private void addVirReg(Entity it, Reg reg, ASMBlock block) {
         if (it.isConstValue()) {
-            block.inst.addFirst(new LiInst(reg, new Imm(it)));
+            block.inst.add(block.inst.size() - 1, new LiInst(reg, new Imm(it)));
         } else if (it instanceof globalVar || it instanceof constString) {
-            block.inst.addFirst(new LaInst(reg, it.irName));
-        }
+            block.inst.add(block.inst.size() - 1, new LaInst(reg, it.irName));
+        } else if (it instanceof constNull) block.inst.add(block.inst.size() - 1, new LiInst(reg, new Imm(0)));
     }
 
 }

@@ -5,7 +5,11 @@ public class stringGlobal extends Operand{
     public String value;
     public stringGlobal(String name, String val) {
         this.name = name;
-        this.value = val.substring(0, val.length() - 1);
+        this.value = val.substring(0, val.length() - 1).replace("\\", "\\\\")
+                .replace("\n", "\\n")
+                .replace("\0", "")
+                .replace("\t", "\\t")
+                .replace("\"", "\\\"");
     }
     @Override
     public String toString() {

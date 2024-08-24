@@ -6,6 +6,7 @@ import Assembly.Operand.PhysicReg;
 import Assembly.Operand.VirtualReg;
 import Assembly.utils.RegStore;
 import MIR.Instruction.Inst;
+import utils.Pair;
 
 import java.util.*;
 
@@ -28,12 +29,12 @@ public class RegAllocator {
             allocSpace = func.allocSpace;
             usedRegNum = 0;
             idleReg.clear();
-            ArrayList<ASMBlock> retInsts = new ArrayList<>();
+            ArrayList<Pair<ASMBlock, Integer>> retInsts = new ArrayList<>();
             for (var block: func.blocks) {
                 for (var inst: block.inst) {
                     allocate(inst);
                     if (inst instanceof Assembly.Inst.RetInst) {
-                        retInsts.add(block);
+                        retInsts.add(new Pair<>(block, allocateInsts.indexOf(inst)));
                     }
                 }
                 block.inst = allocateInsts;
@@ -49,7 +50,12 @@ public class RegAllocator {
             int stackSpace = (totalSpace + 15) / 16 * 16;
             ITypeInst in = new ITypeInst("addi", regs.getPhyReg("sp"), regs.getPhyReg("sp"), new Imm(stackSpace));
             for (var retBlock: retInsts) {
-                retBlock.inst.add(retBlock.inst.size() - 1, in);
+                for (int k = retBlock.getSecond(); k < retBlock.getFirst().inst.size(); k++) {
+                    if (retBlock.getFirst().inst.get(k) instanceof Assembly.Inst.RetInst) {
+                        retBlock.getFirst().inst.add(k, in);
+                        break;
+                    }
+                }
             }
             func.addFirst(new ITypeInst("addi", regs.getPhyReg("sp"), regs.getPhyReg("sp"), new Imm(-stackSpace)));
             func.addFirst(new MvInst(regs.getPhyReg("sp"), regs.getPhyReg("s0")));
