@@ -49,7 +49,7 @@ public class Main {
 //            String filePath = "../src/builtin/builtin.s";
 //            PrintStream outputStream = System.out;
 //            printFileToOutputStream(filePath, outputStream);
-            printBuiltin();
+            //printBuiltin();
             System.out.println(regAllocator);
         } catch (Error error) {
             System.out.println(error.toString());

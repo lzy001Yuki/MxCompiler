@@ -3,6 +3,7 @@ package Assembly;
 import Assembly.Inst.*;
 import Assembly.Operand.Imm;
 import Assembly.Operand.PhysicReg;
+import Assembly.Operand.Reg;
 import Assembly.Operand.VirtualReg;
 import Assembly.utils.RegStore;
 import MIR.Instruction.Inst;
@@ -43,8 +44,20 @@ public class RegAllocator {
             int totalSpace = allocSpace + 4 * (func.virtualNum);
             if (totalSpace == 0) continue;
             for (int i = 0; i < usedRegNum; i++) {
-                func.addLast(new LoadInst("lw", regs.getPhyReg("t" + i), regs.getPhyReg("sp"), new Imm(totalSpace)));
-                func.addFirst(new StoreInst("sw", regs.getPhyReg("t" + i), regs.getPhyReg("sp"), new Imm(totalSpace)));
+                if (totalSpace < 2048) {
+                    func.addLast(new LoadInst("lw", regs.getPhyReg("t" + i), regs.getPhyReg("sp"), new Imm(totalSpace)));
+                    func.addFirst(new StoreInst("sw", regs.getPhyReg("t" + i), regs.getPhyReg("sp"), new Imm(totalSpace)));
+                } else {
+                    PhysicReg tmp1 = getIdleReg();
+                    func.addFirst(new StoreInst("sw", regs.getPhyReg("t" + i), tmp1, new Imm(0)));
+                    func.addFirst(new BinaryInst("add", tmp1, tmp1, regs.getPhyReg("sp")));
+                    func.addFirst(new LiInst(tmp1, new Imm(totalSpace)));
+                    setIdle(tmp1);
+                    PhysicReg tmp2 = getIdleReg();
+                    func.addLast(new LiInst(tmp2, new Imm(totalSpace)));
+                    func.addLast(new BinaryInst("add", tmp2, tmp2, regs.getPhyReg("sp")));
+                    func.addLast(new LoadInst("lw", regs.getPhyReg("t" + i), tmp2, new Imm(0)));
+                }
                 totalSpace += 4;
             }
             int stackSpace = (totalSpace + 15) / 16 * 16;
@@ -52,12 +65,24 @@ public class RegAllocator {
             for (var retBlock: retInsts) {
                 for (int k = retBlock.getSecond(); k < retBlock.getFirst().inst.size(); k++) {
                     if (retBlock.getFirst().inst.get(k) instanceof Assembly.Inst.RetInst) {
-                        retBlock.getFirst().inst.add(k, in);
+                        if (stackSpace < 2048) retBlock.getFirst().inst.add(k, in);
+                        else {
+                            PhysicReg tmp = getIdleReg();
+                            retBlock.getFirst().inst.add(k, new BinaryInst("add", regs.getPhyReg("sp"), regs.getPhyReg("sp"), tmp));
+                            retBlock.getFirst().inst.add(k, new LiInst(tmp, new Imm(stackSpace)));
+                            setIdle(tmp);
+                        }
                         break;
                     }
                 }
             }
-            func.addFirst(new ITypeInst("addi", regs.getPhyReg("sp"), regs.getPhyReg("sp"), new Imm(-stackSpace)));
+            if (stackSpace < 2048) func.addFirst(new ITypeInst("addi", regs.getPhyReg("sp"), regs.getPhyReg("sp"), new Imm(-stackSpace)));
+            else {
+                PhysicReg tmp = getIdleReg();
+                func.addFirst(new BinaryInst("add", regs.getPhyReg("sp"), regs.getPhyReg("sp"), tmp));
+                func.addFirst(new LiInst(tmp, new Imm(-stackSpace)));
+                setIdle(tmp);
+            }
             func.addFirst(new MvInst(regs.getPhyReg("sp"), regs.getPhyReg("s0")));
         }
     }
@@ -90,7 +115,7 @@ public class RegAllocator {
             }
             it.rs2 = phyRs2;
         }
-        allocateInsts.add(it);
+        checkInst(it);
         if (it.rd instanceof VirtualReg) {
             int location = ((VirtualReg) it.rd).index * 4 + allocSpace;
             phyRd = getIdleReg();
@@ -127,5 +152,15 @@ public class RegAllocator {
     @Override
     public String toString() {
         return program.toString();
+    }
+    public void checkInst(ASMInst inst) {
+        if (inst instanceof ITypeInst && (((ITypeInst) inst).imm.value > 2047 || ((ITypeInst) inst).imm.value < -2048)) {
+            PhysicReg tmp = getIdleReg();
+            allocateInsts.add(new LiInst(tmp, ((ITypeInst) inst).imm));
+            allocateInsts.add(new BinaryInst("add", inst.rd, inst.rs1, tmp));
+            setIdle(tmp);
+        } else {
+            allocateInsts.add(inst);
+        }
     }
 }

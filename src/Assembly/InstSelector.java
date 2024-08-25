@@ -28,6 +28,7 @@ public class InstSelector implements IRVisitor {
     public int funcNum = 0;
     public RegStore regs;
     public ASMProgram asmProgram;
+    public int cnt = 0;
 
     public InstSelector(GlobalScope global) {
         globalScope = global;
@@ -101,10 +102,20 @@ public class InstSelector implements IRVisitor {
     @Override
     public void visit(BrInst it){
         curBlock.addInst(new Comment(it.toString()));
+        Reg tmp = null;
+        Label label = null;
         if (it.iffalse != null) {
-            curBlock.addInst(new BeqzInst((Reg) it.cond.operand, getLabel() + it.iffalse));
+            tmp = new VirtualReg();
+            curBlock.addInst(new LaInst(tmp, getLabel() + it.iffalse));
+            label = new Label(getLabel() + "skip" + cnt);
+            cnt++;
+            curBlock.addInst(new BeqzInst((Reg) it.cond.operand, label.symbol));
         }
         curBlock.addInst(new JumpInst(getLabel() + it.iftrue));
+        if (it.iffalse != null) {
+            curBlock.addInst(label);
+            curBlock.addInst(new JrInst(tmp));
+        }
     }
     @Override
     public void visit(MIR.Instruction.CallInst it){

@@ -6,8 +6,14 @@ import MIR.irEntity.constInt;
 
 public class Imm extends Operand{
     public int value = 0;
+    public String symbol;
+    public String type;
     public Imm(int val) {
         value = val;
+    }
+    public Imm(String t, String s) {
+        symbol = s;
+        type = t;
     }
     public Imm(Entity en) {
         if (en instanceof constInt cInt) {
@@ -18,6 +24,7 @@ public class Imm extends Operand{
     }
     @Override
     public String toString() {
-        return "" + value;
+        if (type == null) return "" + value;
+        else return "%" + type + "(" + symbol + ")";
     }
 }

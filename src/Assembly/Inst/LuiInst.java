@@ -11,6 +11,6 @@ public class LuiInst extends ASMInst{
     }
     @Override
     public String toString() {
-        return "\tlui " + rd + ", " + imm + '\n';
+       return "\tlui " + rd + ", " + imm + '\n';
     }
 }
