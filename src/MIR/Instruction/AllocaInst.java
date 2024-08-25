@@ -5,10 +5,10 @@ import MIR.irEntity.*;
 import MIR.type.IRType;
 
 public class AllocaInst extends Inst{
-    public Ptr result;
+    public Entity result;
     public IRType allocType;
     public String className;
-    public AllocaInst(Ptr l, IRType type, String str) {
+    public AllocaInst(Entity l, IRType type, String str) {
         this.result = l;
         this.allocType = type;
         this.className = str;

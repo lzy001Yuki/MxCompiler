@@ -616,7 +616,7 @@ public class IRBuilder implements ASTVisitor {
         else {
             it.expr2.accept(this);
         }
-        it.expr2.entity = loadPtr(it.expr2.entity);
+        if (!(it.expr2.entity instanceof constString)) it.expr2.entity = loadPtr(it.expr2.entity);
         if (!(it.expr2 instanceof ternaryExprNode)) br1 = new Pair<>(it.expr2.entity, firStr);
         curBlock.addInst(new BrInst(null, endStr, null));
         curBlock = new block(secStr, curFunc);
@@ -626,7 +626,7 @@ public class IRBuilder implements ASTVisitor {
         else {
             it.expr3.accept(this);
         }
-        it.expr3.entity = loadPtr(it.expr3.entity);
+        if (!(it.expr3.entity instanceof constString)) it.expr3.entity = loadPtr(it.expr3.entity);
         if (!(it.expr3 instanceof ternaryExprNode)) br2 = new Pair<>(it.expr3.entity, secStr);
         curBlock.addInst(new BrInst(null, endStr, null));
         curBlock = new block(endStr, curFunc);
@@ -637,6 +637,12 @@ public class IRBuilder implements ASTVisitor {
             inst2.jump.add(br1);
             inst2.jump.add(br2);
             curBlock.addInst(inst2);
+            if (it.expr2.entity instanceof constString) {
+                localVar copy = new localVar(new ptrType(it.expr2.entity.type), generator.getName());
+                curBlock.addInst(new AllocaInst(copy, copy.type, null));
+                curBlock.addInst(new StoreInst(local, copy));
+                local = copy;
+            }
         }
         it.entity = local;
         return new Pair<>(local, endStr);

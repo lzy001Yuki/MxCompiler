@@ -13,7 +13,7 @@ public class stringGlobal extends Operand{
     }
     @Override
     public String toString() {
-        return "\t.globl " + name + "\n" +
+        return "\t.align 2\n" + "\t.globl " + name + "\n" +
                 name + ":\n\t.asciz \"" + value + "\"\n" +
                 "\t.size " + name + " " + (value.length() + 1)  + "\n\n";
     }

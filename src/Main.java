@@ -36,7 +36,7 @@ public class Main {
             checker.visit(root);
             IRBuilder irBuilder = new IRBuilder(globalScope);
             irBuilder.visit(root);
-//            var output = new PrintStream(new FileOutputStream("irOutput.txt"));
+//           var output = new PrintStream(new FileOutputStream("irOutput.txt"));
 //            output.println(irBuilder);
             InstSelector selector = new InstSelector(globalScope);
             selector.visit(globalScope);
