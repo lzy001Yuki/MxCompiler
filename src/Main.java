@@ -13,7 +13,7 @@ import parser.MxParser;
 import parser.MxLexer;
 import utils.MxErrorListener;
 import utils.Scope.GlobalScope;
-// pass: e bubble floyd quick_sort selection_sort t1-60 t62-63 t66-70 t72-74
+
 public class Main {
     public static void main(String[] args) throws Exception {
         InputStream input = System.in;
@@ -46,36 +46,13 @@ public class Main {
             regAllocator.run();
 //            var output1 = new PrintStream(new FileOutputStream("tmp/test.s"));
 //            output1.println(regAllocator);
-//            String filePath = "../src/builtin/builtin.s";
-//            PrintStream outputStream = System.out;
-//            printFileToOutputStream(filePath, outputStream);
             printBuiltin();
             System.out.println(regAllocator);
         } catch (Error error) {
             System.out.println(error.toString());
             System.exit(1);
-        } catch (RuntimeException ex) {System.exit(0);}
-        System.exit(0);
-    }
-    public static void printFileToOutputStream(String filePath, PrintStream outputStream) {
-        BufferedReader reader = null;
-        try {
-            reader = new BufferedReader(new FileReader(filePath));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                outputStream.println(line);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (reader != null) {
-                    reader.close();
-                }
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
         }
+        System.exit(0);
     }
     public static void printBuiltin() {
         System.out.println("\t.text\n" +

@@ -8,9 +8,9 @@ import java.util.ArrayList;
 
 public class GetelementInst extends Inst{
     public localPtr result;
-    public Ptr ptrVal;
+    public Entity ptrVal;
     public ArrayList<Entity> index;
-    public GetelementInst(localPtr res, Ptr ptr) {
+    public GetelementInst(localPtr res, Entity ptr) {
         result = res;
         ptrVal = ptr;
         index = new ArrayList<>();

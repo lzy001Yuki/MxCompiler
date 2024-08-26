@@ -481,6 +481,12 @@ public class IRBuilder implements ASTVisitor {
     @Override
     public void visit(funcExprNode it){
         it.exprNode.accept(this);
+        if (!(it.exprNode.entity instanceof function)) {
+            // 必须在类里才会重名
+            if (currentScope.isInClass() == null) throw new RuntimeException("redefinition: class function & variable");
+            function func = globalScope.getIrFunction(currentScope.isInClass() + "." + it.exprNode.type.typeName);
+            it.exprNode.entity = new function(func.irName, func.type, false, func.className);
+        }
         CallInst inst = new CallInst((function) it.exprNode.entity, generator.getName());
         if (!(it.exprNode instanceof memberExprNode)) {
             if (curFunc.isMember && curFunc.className.equals(((function) it.exprNode.entity).className))
@@ -498,10 +504,10 @@ public class IRBuilder implements ASTVisitor {
     public void visit(indexExprNode it){
         it.exprNode.accept(this);
         localPtr res = new localPtr("here");
-        Ptr cur = (Ptr)it.exprNode.entity;
+        Entity cur = it.exprNode.entity;
         for (int i = 0; i < it.index.size(); i++) {
             it.index.get(i).accept(this);
-            cur = (localPtr) loadPtr(cur);
+            cur = loadPtr(cur);
             res = new localPtr(((ptrType) cur.type).baseType, rename("array_ptr"));
             GetelementInst inst = new GetelementInst(res, cur);
             cur = res;
@@ -590,7 +596,7 @@ public class IRBuilder implements ASTVisitor {
             localPtr result = new localPtr(IRType.dataToIR(it.type), rename(it.obj.type.typeName + "." + it.member + "_ptr"));
             it.type.arrayDim = dim;
             if (dim != 0) it.type.isArray = true;
-            GetelementInst inst = new GetelementInst(result, (localPtr) it.obj.entity);
+            GetelementInst inst = new GetelementInst(result, it.obj.entity);
             inst.index.add(new constInt(0));
             inst.index.add(new constInt(object.varMap.get(it.member).getFirst()));
             curBlock.addInst(inst);
