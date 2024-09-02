@@ -9,11 +9,15 @@ import java.util.ArrayList;
 public class block {
     public String lab;
     public ArrayList<Inst> instructions;
+    public ArrayList<block> prev;
+    public ArrayList<block> next;
     public function parentFunc;
     public block(String str, function parent) {
         lab = str;
         parentFunc = parent;
         instructions = new ArrayList<>();
+        prev = new ArrayList<>();
+        next = new ArrayList<>();
     }
     public block() {
         instructions = new ArrayList<>();

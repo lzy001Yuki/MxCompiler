@@ -11,6 +11,7 @@ public class varGlobal extends Operand{
         this.size = 4;
         if (variable.init != null) {
             if (variable.init instanceof constString) word = variable.init.getName().substring(1);
+            else if (variable.init instanceof constNull) word = "0";
             else word = variable.init.getName();
         } else word = "0";
     }

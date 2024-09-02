@@ -36,18 +36,18 @@ public class Main {
             checker.visit(root);
             IRBuilder irBuilder = new IRBuilder(globalScope);
             irBuilder.visit(root);
-//           var output = new PrintStream(new FileOutputStream("irOutput.txt"));
-//            output.println(irBuilder);
+           var output = new PrintStream(new FileOutputStream("irOutput.txt"));
+            output.println(irBuilder);
             InstSelector selector = new InstSelector(globalScope);
             selector.visit(globalScope);
 //            var output2 = new PrintStream(new FileOutputStream("asm.txt"));
 //            output2.println(selector.asmProgram);
             RegAllocator regAllocator = new RegAllocator(selector.asmProgram);
             regAllocator.run();
-//            var output1 = new PrintStream(new FileOutputStream("tmp/test.s"));
-//            output1.println(regAllocator);
-            printBuiltin();
-            System.out.println(regAllocator);
+            var output1 = new PrintStream(new FileOutputStream("tmp/test.s"));
+            output1.println(regAllocator);
+            //printBuiltin();
+            //System.out.println(regAllocator);
         } catch (Error error) {
             System.out.println(error.toString());
             System.exit(1);

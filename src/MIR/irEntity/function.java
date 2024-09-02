@@ -5,11 +5,13 @@ import MIR.type.IRType;
 import MIR.type.classType;
 import MIR.utils.block;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class function extends Entity{
     public boolean isMember;
     public ArrayList<Entity> paraList;
     public ArrayList<block> blocks;
+    public HashMap<String, block> blockMap;
     public String className;
     public function(String funcName, IRType ret, boolean flag, String clsName) {
         super(ret, funcName);
@@ -18,8 +20,12 @@ public class function extends Entity{
         if (flag) paraList.add(new localPtr(new classType(clsName), "this"));
         blocks = new ArrayList<>();
         this.className = clsName;
+        blockMap = new HashMap<>();
     }
-    public void addBlock(block blk) {blocks.add(blk);}
+    public void addBlock(block blk) {
+        blocks.add(blk);
+        blockMap.put(blk.lab, blk);
+    }
     public void addPara(Entity en) {paraList.add(en);}
     @Override
     public String toString() {

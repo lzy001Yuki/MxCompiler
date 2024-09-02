@@ -98,8 +98,8 @@ public class IRBuilder implements ASTVisitor {
                 if (dim != 0) ((funcDefNode) def).returnType.isArray = true;
                 globalScope.addIrFunction(((funcDefNode) def).funcName, curFunc);
                 //def.accept(this);
-                //curFunc = init_;
-                //curBlock = init_.blocks.getLast();
+                curFunc = init_;
+                curBlock = init_.blocks.getLast();
             }
         }
         curBlock = init_.blocks.getLast();

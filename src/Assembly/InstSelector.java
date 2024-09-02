@@ -17,6 +17,7 @@ import utils.Scope.GlobalScope;
 import utils.Scope.Scope;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import MIR.irEntity.*;
 import MIR.type.*;
@@ -28,12 +29,14 @@ public class InstSelector implements IRVisitor {
     public int funcNum = 0;
     public RegStore regs;
     public ASMProgram asmProgram;
+    public HashMap<String, ASMBlock> blockMap;
     public int cnt = 0;
 
     public InstSelector(GlobalScope global) {
         globalScope = global;
         asmProgram = new ASMProgram();
         regs = new RegStore();
+        blockMap = new HashMap<>();
     }
     @Override
     public void visit(GlobalScope it){
@@ -65,7 +68,11 @@ public class InstSelector implements IRVisitor {
             else it.paraList.get(i).operand = regs.getPhyReg("s0");
         }
         for (var iter: it.blocks) {
-            curBlock = new ASMBlock(getLabel() + iter.lab);
+            ASMBlock b = new ASMBlock(getLabel() + iter.lab);
+            blockMap.put(getLabel() + iter.lab, b);
+        }
+        for (var iter: it.blocks) {
+            curBlock = blockMap.get(getLabel() + iter.lab);
             curFunc.addBlock(curBlock);
             iter.accept(this);
         }
@@ -109,12 +116,14 @@ public class InstSelector implements IRVisitor {
             curBlock.addInst(new LaInst(tmp, getLabel() + it.iffalse));
             label = new Label(getLabel() + "skip" + cnt);
             cnt++;
-            curBlock.addInst(new BeqzInst((Reg) it.cond.operand, label.symbol));
+            curBlock.addInst(new BeqzInst(getVirReg(it.cond), label.symbol));
         }
         curBlock.addInst(new JumpInst(getLabel() + it.iftrue));
+        link(curBlock.label, getLabel() + it.iftrue);
         if (it.iffalse != null) {
             curBlock.addInst(label);
             curBlock.addInst(new JrInst(tmp));
+            link(curBlock.label, getLabel() + it.iffalse);
         }
     }
     @Override
@@ -282,6 +291,13 @@ public class InstSelector implements IRVisitor {
         } else if (it instanceof globalVar || it instanceof constString) {
             block.inst.add(block.inst.size() - 1, new LaInst(reg, it.irName));
         } else if (it instanceof constNull) block.inst.add(block.inst.size() - 1, new LiInst(reg, new Imm(0)));
+    }
+
+    private void link(String pre, String nxt) {
+        ASMBlock first = blockMap.get(pre);
+        ASMBlock second = blockMap.get(nxt);
+        first.next.add(second);
+        second.prev.add(first);
     }
 
 }
