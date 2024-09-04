@@ -5,6 +5,7 @@ import MIR.Instruction.Inst;
 import MIR.irEntity.function;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class block {
     public String lab;
@@ -12,12 +13,17 @@ public class block {
     public ArrayList<block> prev;
     public ArrayList<block> next;
     public function parentFunc;
+    public block iDom = null;
+    public HashSet<block> df;
+    public HashSet<block> dc;
     public block(String str, function parent) {
         lab = str;
         parentFunc = parent;
         instructions = new ArrayList<>();
         prev = new ArrayList<>();
         next = new ArrayList<>();
+        df = new HashSet<>();
+        dc = new HashSet<>();
     }
     public block() {
         instructions = new ArrayList<>();
