@@ -44,6 +44,7 @@ public class DomTree {
                 block copy = null;
                 for (var prev: obj.prev) {
                     if (prev.iDom != null) copy = intersect(prev, copy);
+                    else if (copy == null) copy = prev;
                 }
                 if (copy != obj.iDom) {
                     obj.iDom = copy;
@@ -56,7 +57,7 @@ public class DomTree {
     public void getDfDc() {
         for (var it: poList) {
             if (it.iDom != null) it.iDom.dc.add(it);
-            if (it.prev.size() > 2) {
+            if (it.prev.size() >= 2) {
                 for (var pre: it.prev) {
                     var copy = pre;
                     while (copy != it.iDom) {
@@ -71,7 +72,7 @@ public class DomTree {
     void getRpo(block target) {
         visited.add(target);
         for (var suc: target.next) {
-            if (!visited.contains(target)) getRpo(suc);
+            if (!visited.contains(suc)) getRpo(suc);
         }
         poList.add(target);
     }

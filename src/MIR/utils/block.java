@@ -2,14 +2,17 @@ package MIR.utils;
 
 import MIR.IRVisitor;
 import MIR.Instruction.Inst;
+import MIR.Instruction.PhiInst;
 import MIR.irEntity.function;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 
 public class block {
     public String lab;
     public ArrayList<Inst> instructions;
+    public LinkedList<PhiInst> phiInsts;
     public ArrayList<block> prev;
     public ArrayList<block> next;
     public function parentFunc;
@@ -22,6 +25,7 @@ public class block {
         instructions = new ArrayList<>();
         prev = new ArrayList<>();
         next = new ArrayList<>();
+        phiInsts = new LinkedList<>();
         df = new HashSet<>();
         dc = new HashSet<>();
     }
@@ -35,6 +39,9 @@ public class block {
     public String toString() {
         StringBuilder ans = new StringBuilder();
         ans.append(lab).append(":\n");
+        for(var phi: phiInsts) {
+            ans.append("\t").append(phi).append("\n");
+        }
         for (var inst: instructions) {
             ans.append("\t").append(inst).append("\n");
         }
