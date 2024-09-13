@@ -218,6 +218,8 @@ public class InstSelector implements IRVisitor {
     // currently no critical edge
     @Override
     public void visit(PhiInst it){
+        /*
+        // phi elimination instead
         curBlock.addInst(new Comment(it.toString()));
         it.result.operand = new VirtualReg();
         ASMBlock preBlock1 = null, preBlock2 = null;
@@ -242,7 +244,7 @@ public class InstSelector implements IRVisitor {
         curFunc.allocSpace += 4;
         Reg mid1 = new VirtualReg();
         curBlock.addInst(new LoadInst("lw", mid1, mid, new Imm(0)));
-        curBlock.addInst(new MvInst(mid1, (Reg) it.result.operand));
+        curBlock.addInst(new MvInst(mid1, (Reg) it.result.operand));*/
     }
     @Override
     public void visit(MIR.Instruction.RetInst it){
@@ -265,6 +267,14 @@ public class InstSelector implements IRVisitor {
             curBlock.addInst(new LaInst(pointerReg, it.pointer.irName));
         }
         curBlock.addInst(new StoreInst("sw", dest, pointerReg, new Imm(0)));
+    }
+
+    @Override
+    public void visit(MIR.Instruction.MoveInst it) {
+        curBlock.addInst(new Comment(it.toString()));
+        if (it.dest.operand == null) it.dest.operand = new VirtualReg();
+        Reg src = getVirReg(it.src);
+        curBlock.addInst(new MvInst(src, (Reg)it.dest.operand));
     }
 
     private String getLabel() {return ".Lfunc" + funcNum + ".";}

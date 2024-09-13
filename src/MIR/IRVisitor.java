@@ -20,4 +20,5 @@ public interface IRVisitor {
     public void visit(PhiInst it);
     public void visit(RetInst it);
     public void visit(StoreInst it);
+    public void visit(MoveInst it);
 }

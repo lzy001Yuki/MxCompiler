@@ -6,6 +6,7 @@ import MIR.IRBuilder;
 import Middleend.CFGBuilder;
 import Middleend.DomTree;
 import Middleend.Mem2Reg;
+import Middleend.PhiElimination;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -49,6 +50,10 @@ public class Main {
             optimizer.run(globalScope);
             var output1 = new PrintStream(new FileOutputStream("irOptimizer.txt"));
             output1.println(irBuilder);
+            PhiElimination phiElimination = new PhiElimination(globalScope);
+            phiElimination.run();
+            var output4 = new PrintStream(new FileOutputStream("phiElimination.txt"));
+            output4.println(irBuilder);
             InstSelector selector = new InstSelector(globalScope);
             selector.visit(globalScope);
 //            var output2 = new PrintStream(new FileOutputStream("asm.txt"));
