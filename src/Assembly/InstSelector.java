@@ -56,12 +56,13 @@ public class InstSelector implements IRVisitor {
     }
     @Override
     public void visit(block it){
-        for (var iter: it.instructions) {
-            iter.accept(this);
-        }
         for (var iter: it.phiInsts) {
             iter.accept(this);
         }
+        for (var iter: it.instructions) {
+            iter.accept(this);
+        }
+
     }
     @Override
     public void visit(function it){
@@ -73,12 +74,10 @@ public class InstSelector implements IRVisitor {
         for (var iter: it.blocks) {
             ASMBlock b = new ASMBlock(getLabel() + iter.lab);
             blockMap.put(getLabel() + iter.lab, b);
+            curFunc.addBlock(b);
         }
         for (var iter: it.blocks) {
             curBlock = blockMap.get(getLabel() + iter.lab);
-            curFunc.addBlock(curBlock);
-        }
-        for (var iter: it.blocks) {
             iter.accept(this);
         }
     }
