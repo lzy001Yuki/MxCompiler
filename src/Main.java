@@ -17,7 +17,7 @@ import parser.MxParser;
 import parser.MxLexer;
 import utils.MxErrorListener;
 import utils.Scope.GlobalScope;
-
+// pass: e
 public class Main {
     public static void main(String[] args) throws Exception {
         InputStream input = System.in;
@@ -49,7 +49,7 @@ public class Main {
             Mem2Reg optimizer = new Mem2Reg(irBuilder);
             optimizer.run(globalScope);
             var output1 = new PrintStream(new FileOutputStream("irOptimizer.txt"));
-            output1.println(irBuilder);
+           output1.println(irBuilder);
             PhiElimination phiElimination = new PhiElimination(globalScope);
             phiElimination.run();
             var output4 = new PrintStream(new FileOutputStream("phiElimination.txt"));

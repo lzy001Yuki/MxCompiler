@@ -2,9 +2,8 @@ package Middleend;
 
 import MIR.IRBuilder;
 import MIR.Instruction.*;
-import MIR.irEntity.Entity;
-import MIR.irEntity.function;
-import MIR.irEntity.localVar;
+import MIR.irEntity.*;
+import MIR.type.*;
 import MIR.type.ptrType;
 import MIR.utils.block;
 import utils.Pair;
@@ -34,8 +33,18 @@ public class Mem2Reg {
 
     public void collectVars(function func) {
         collectAlloca.clear();
-        for (var inst: func.blocks.getFirst().instructions) {
-            if (inst instanceof AllocaInst) collectAlloca.put(((AllocaInst) inst).result, new HashSet<>());
+        for (var blk: func.blocks) {
+            Iterator<Inst> iterator = blk.instructions.iterator();
+            while (iterator.hasNext()) {
+                Inst inst = iterator.next();
+                if (inst instanceof AllocaInst) {
+                    collectAlloca.put(((AllocaInst) inst).result, new HashSet<>());
+                    if (!blk.equals(func.blocks.getFirst())) {
+                        func.blocks.getFirst().addInst(inst);
+                        iterator.remove();
+                    }
+                }
+            }
         }
         for (var blk: func.blocks) {
             for (var iter: blk.instructions) {
@@ -81,20 +90,37 @@ public class Mem2Reg {
             Inst inst = iterator.next();
             if (inst instanceof LoadInst load) {
                 if (!load.pointer.irName.contains("array_ptr")) {
-                    Entity replaced = replaceName(load.pointer.irName);
-                    inst.replaceOperand(load.pointer, replaced);
-                    pushCurVar(load.result.irName, load.pointer);
-                    curVar.add(load.result.irName);
-                    iterator.remove();
+                    if (!(load.pointer instanceof globalVar)) {
+                        Entity replaced = replaceName(load.pointer.irName);
+                        inst.replaceOperand(load.pointer, replaced);
+                        pushCurVar(load.result.irName, load.pointer);
+                        curVar.add(load.result.irName);
+                        iterator.remove();
+                    }
                 }
             } else if (inst instanceof StoreInst store) {
                 if (!store.pointer.irName.contains("malloc_ptr") && !store.pointer.irName.contains("next_ptr") && !store.pointer.irName.contains("array_ptr")) {
-                    pushCurVar(store.pointer.irName, store.value);
-                    curVar.add(store.pointer.irName);
-                    iterator.remove();
+                    if (!(store.pointer instanceof globalVar)) {
+                        pushCurVar(store.pointer.irName, store.value);
+                        curVar.add(store.pointer.irName);
+                        iterator.remove();
+                    }
+                } else {
+                    Entity replaced = replaceName(store.value.irName);
+                    if (replaced != null) inst.replaceOperand(store.value, replaced);
                 }
             } else if (inst instanceof AllocaInst alloca) {
                 // do nothing
+                if (alloca.allocType instanceof intType) {
+                    pushCurVar(alloca.result.irName, new constInt(0));
+                    curVar.add(alloca.result.irName);
+                } else if (alloca.allocType instanceof boolType) {
+                    pushCurVar(alloca.result.irName, new constBool(false));
+                    curVar.add(alloca.result.irName);
+                } else {
+                    pushCurVar(alloca.result.irName, new constNull());
+                    curVar.add(alloca.result.irName);
+                }
             } else {
                 for (var uses: inst.getUses()) {
                     if (!uses.irName.contains("malloc_ptr")) {
