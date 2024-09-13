@@ -4,6 +4,8 @@ import MIR.IRVisitor;
 import MIR.irEntity.*;
 import MIR.utils.label;
 
+import java.util.ArrayList;
+
 public class BrInst extends Inst{
     public Entity cond;
     public String iftrue, iffalse;
@@ -20,5 +22,19 @@ public class BrInst extends Inst{
     @Override
     public void accept(IRVisitor visitor) {
         visitor.visit(this);
+    }
+    @Override
+    public ArrayList<Entity> getUses(){
+        ArrayList<Entity> operands = new ArrayList<>();
+        if (cond != null && !cond.isConstValue()) operands.add(cond);
+        return operands;
+    }
+    @Override
+    public Entity getDef(){
+        return null;
+    }
+    @Override
+    public void replaceOperand(Entity old, Entity replace) {
+        if (old.equals(cond)) cond = replace;
     }
 }

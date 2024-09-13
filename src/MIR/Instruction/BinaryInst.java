@@ -4,6 +4,8 @@ import MIR.IRVisitor;
 import MIR.irEntity.*;
 import MIR.type.ptrType;
 
+import java.util.ArrayList;
+
 public class BinaryInst extends Inst{
     public localVar result;
     public String op;
@@ -37,5 +39,21 @@ public class BinaryInst extends Inst{
     @Override
     public void accept(IRVisitor visitor) {
         visitor.visit(this);
+    }
+    @Override
+    public ArrayList<Entity> getUses(){
+        ArrayList<Entity> operands = new ArrayList<>();
+        if (!op1.isConstValue()) operands.add(op1);
+        if(!op2.isConstValue()) operands.add(op2);
+        return operands;
+    }
+    @Override
+    public Entity getDef(){
+        return result;
+    }
+    @Override
+    public void replaceOperand(Entity old, Entity replace) {
+        if (old.equals(op1)) op1 = replace;
+        else op2 = replace;
     }
 }

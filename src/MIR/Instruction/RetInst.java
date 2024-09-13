@@ -5,6 +5,8 @@ import MIR.irEntity.Entity;
 import MIR.type.IRType;
 import MIR.type.voidType;
 
+import java.util.ArrayList;
+
 public class RetInst extends Inst{
     public Entity retType;
     public RetInst(Entity obj) {
@@ -21,5 +23,18 @@ public class RetInst extends Inst{
     @Override
     public void accept(IRVisitor visitor) {
         visitor.visit(this);
+    }
+    public ArrayList<Entity> getUses(){
+        ArrayList<Entity> operands = new ArrayList<>();
+        if (!retType.isConstValue() && !(retType.type instanceof voidType)) operands.add(retType);
+        return operands;
+    }
+    @Override
+    public Entity getDef(){
+        return null;
+    }
+    @Override
+    public void replaceOperand(Entity old, Entity replace) {
+        retType = replace;
     }
 }

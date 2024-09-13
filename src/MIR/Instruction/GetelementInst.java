@@ -30,4 +30,23 @@ public class GetelementInst extends Inst{
     public void accept(IRVisitor visitor) {
         visitor.visit(this);
     }
+    public ArrayList<Entity> getUses(){
+        ArrayList<Entity> operands = new ArrayList<>();
+        if (!ptrVal.isConstValue()) operands.add(ptrVal);
+        for (var idx: index) {
+            if (!idx.isConstValue()) operands.add(idx);
+        }
+        return operands;
+    }
+    @Override
+    public Entity getDef(){
+        return result;
+    }
+    @Override
+    public void replaceOperand(Entity old, Entity replace) {
+        if (old.equals(ptrVal)) ptrVal = replace;
+        for (int i = 0; i < index.size(); i++) {
+            if (index.get(i).equals(old)) index.set(i, replace);
+        }
+    }
 }

@@ -4,6 +4,8 @@ import MIR.IRVisitor;
 import MIR.irEntity.*;
 import MIR.type.IRType;
 
+import java.util.ArrayList;
+
 public class AllocaInst extends Inst{
     public Entity result;
     public IRType allocType;
@@ -24,4 +26,18 @@ public class AllocaInst extends Inst{
     public void accept(IRVisitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public ArrayList<Entity> getUses(){
+        return new ArrayList<>();
+    }
+    @Override
+    public Entity getDef(){
+        return result;
+    }
+    @Override
+    public void replaceOperand(Entity old, Entity replace) {
+
+    }
+
 }

@@ -28,4 +28,21 @@ public class PhiInst extends Inst{
     public void accept(IRVisitor visitor) {
         visitor.visit(this);
     }
+    public ArrayList<Entity> getUses(){
+        ArrayList<Entity> operands = new ArrayList<>();
+        for (var it: jump) {
+            if (!it.getFirst().isConstValue()) operands.add(it.getFirst());
+        }
+        return operands;
+    }
+    @Override
+    public Entity getDef(){
+        return result;
+    }
+    @Override
+    public void replaceOperand(Entity old, Entity replace) {
+        for (int i = 0; i < jump.size(); i++) {
+            if (jump.get(i).getFirst().equals(old)) jump.set(i, new Pair<>(replace, jump.get(i).getSecond()));
+        }
+    }
 }

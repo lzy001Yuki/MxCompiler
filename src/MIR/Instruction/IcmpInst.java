@@ -3,6 +3,8 @@ package MIR.Instruction;
 import MIR.IRVisitor;
 import MIR.irEntity.*;
 
+import java.util.ArrayList;
+
 public class IcmpInst extends Inst{
     public localVar result;
     public String op;
@@ -52,5 +54,21 @@ public class IcmpInst extends Inst{
     @Override
     public void accept(IRVisitor visitor) {
         visitor.visit(this);
+    }
+
+    public ArrayList<Entity> getUses(){
+        ArrayList<Entity> operands = new ArrayList<>();
+        if (!op1.isConstValue()) operands.add(op1);
+        if (!op2.isConstValue()) operands.add(op2);
+        return operands;
+    }
+    @Override
+    public Entity getDef(){
+        return result;
+    }
+    @Override
+    public void replaceOperand(Entity old, Entity replace) {
+        if (old.equals(op1)) op1 = replace;
+        else op2 = replace;
     }
 }

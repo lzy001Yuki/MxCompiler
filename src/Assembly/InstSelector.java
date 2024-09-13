@@ -59,6 +59,9 @@ public class InstSelector implements IRVisitor {
         for (var iter: it.instructions) {
             iter.accept(this);
         }
+        for (var iter: it.phiInsts) {
+            iter.accept(this);
+        }
     }
     @Override
     public void visit(function it){
@@ -74,6 +77,8 @@ public class InstSelector implements IRVisitor {
         for (var iter: it.blocks) {
             curBlock = blockMap.get(getLabel() + iter.lab);
             curFunc.addBlock(curBlock);
+        }
+        for (var iter: it.blocks) {
             iter.accept(this);
         }
     }
@@ -227,8 +232,10 @@ public class InstSelector implements IRVisitor {
         Reg mid = new VirtualReg();
         Reg newReg1 = judgeReg(it.jump.get(0).getFirst());
         Reg newReg2 = judgeReg(it.jump.get(1).getFirst());
-        preBlock1.inst.add(preBlock1.inst.size() - 1, new ITypeInst("addi", regs.getPhyReg("sp"), mid, new Imm(curFunc.allocSpace)));
-        preBlock2.inst.add(preBlock2.inst.size() - 1, new ITypeInst("addi", regs.getPhyReg("sp"), mid, new Imm(curFunc.allocSpace)));
+        if (preBlock1.inst.isEmpty()) preBlock1.inst.add(new ITypeInst("addi", regs.getPhyReg("sp"), mid, new Imm(curFunc.allocSpace)));
+        else preBlock1.inst.add(preBlock1.inst.size() - 1, new ITypeInst("addi", regs.getPhyReg("sp"), mid, new Imm(curFunc.allocSpace)));
+        if (preBlock2.inst.isEmpty()) preBlock2.inst.add(new ITypeInst("addi", regs.getPhyReg("sp"), mid, new Imm(curFunc.allocSpace)));
+        else preBlock2.inst.add(preBlock2.inst.size() - 1, new ITypeInst("addi", regs.getPhyReg("sp"), mid, new Imm(curFunc.allocSpace)));
         addVirReg(it.jump.get(1).getFirst(), newReg2, preBlock2);
         addVirReg(it.jump.get(0).getFirst(), newReg1, preBlock1);
         preBlock2.inst.add(preBlock2.inst.size() - 1, new StoreInst("sw", newReg2, mid, new Imm(0)));

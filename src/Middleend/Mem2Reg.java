@@ -80,13 +80,28 @@ public class Mem2Reg {
         while (iterator.hasNext()) {
             Inst inst = iterator.next();
             if (inst instanceof LoadInst load) {
-                Entity replaced = replaceName(load.pointer.irName);
-
-                iterator.remove();
+                if (!load.pointer.irName.contains("array_ptr")) {
+                    Entity replaced = replaceName(load.pointer.irName);
+                    inst.replaceOperand(load.pointer, replaced);
+                    pushCurVar(load.result.irName, load.pointer);
+                    curVar.add(load.result.irName);
+                    iterator.remove();
+                }
             } else if (inst instanceof StoreInst store) {
-                pushCurVar(store.pointer.irName, store.value);
-                curVar.add(store.pointer.irName);
-                iterator.remove();
+                if (!store.pointer.irName.contains("malloc_ptr") && !store.pointer.irName.contains("next_ptr") && !store.pointer.irName.contains("array_ptr")) {
+                    pushCurVar(store.pointer.irName, store.value);
+                    curVar.add(store.pointer.irName);
+                    iterator.remove();
+                }
+            } else if (inst instanceof AllocaInst alloca) {
+                // do nothing
+            } else {
+                for (var uses: inst.getUses()) {
+                    if (!uses.irName.contains("malloc_ptr")) {
+                        Entity replaced = replaceName(uses.irName);
+                        if (replaced != null) inst.replaceOperand(uses, replaced);
+                    }
+                }
             }
         }
         for (var nxt: blk.next) {
@@ -107,15 +122,20 @@ public class Mem2Reg {
 
     public void pushCurVar(String name, Entity entity) {
         if (Name2Entity.containsKey(name)) Name2Entity.get(name).push(entity);
-        else Name2Entity.put(name, new Stack<>());
+        else {
+            Stack<Entity> newStack = new Stack<>();
+            newStack.add(entity);
+            Name2Entity.put(name, newStack);
+        }
     }
 
     public Entity replaceName(String name) {
-        if (!Name2Entity.containsKey(name)) return null;
-        else {
-            var allName = Name2Entity.get(name);
-            if (allName.isEmpty()) return null;
-            else return allName.getLast();
+        Entity replace1 = null;
+        String curname = name;
+        while (Name2Entity.containsKey(curname) && !Name2Entity.get(curname).isEmpty()) {
+            replace1 = Name2Entity.get(curname).getLast();
+            curname = replace1.irName;
         }
+        return replace1;
     }
 }

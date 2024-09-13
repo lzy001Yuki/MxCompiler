@@ -46,4 +46,22 @@ public class CallInst extends Inst{
     public void accept(IRVisitor visitor) {
         visitor.visit(this);
     }
+    @Override
+    public ArrayList<Entity> getUses(){
+        ArrayList<Entity> operands = new ArrayList<>();
+        for(var it: para) {
+            if (!it.isConstValue()) operands.add(it);
+        }
+        return operands;
+    }
+    @Override
+    public Entity getDef(){
+        return ret;
+    }
+    @Override
+    public void replaceOperand(Entity old, Entity replace) {
+        for (int i = 0; i < para.size(); i++) {
+            if (para.get(i).equals(old)) para.set(i, replace);
+        }
+    }
 }
