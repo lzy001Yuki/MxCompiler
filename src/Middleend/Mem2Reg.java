@@ -91,7 +91,7 @@ public class Mem2Reg {
         while (iterator.hasNext()) {
             Inst inst = iterator.next();
             if (inst instanceof LoadInst load) {
-                if (!load.pointer.irName.contains("array_ptr") && !check(objectPtr, load.pointer)) {
+                if (!load.pointer.irName.contains("array_ptr") && !check(objectPtr, load.pointer) && !judgeThis(load.pointer.irName)) {
                     if (!(load.pointer instanceof globalVar)) {
                         Entity replaced = replaceName(load.pointer.irName);
                         inst.replaceOperand(load.pointer, replaced);
@@ -105,7 +105,7 @@ public class Mem2Reg {
                     if (replaced != null) inst.replaceOperand(load.pointer, replaced);
                 }
             } else if (inst instanceof StoreInst store) {
-                if (!store.pointer.irName.contains("malloc_ptr") && !store.pointer.irName.contains("next_ptr") && !store.pointer.irName.contains("array_ptr") && !(store.pointer instanceof globalVar) && !check(objectPtr, store.pointer)) {
+                if (!store.pointer.irName.contains("malloc_ptr") && !store.pointer.irName.contains("next_ptr") && !store.pointer.irName.contains("array_ptr") && !(store.pointer instanceof globalVar) && !check(objectPtr, store.pointer) && !judgeThis(store.pointer.irName)) {
                     pushCurVar(store.pointer.irName, store.value);
                     curVar.add(store.pointer.irName);
                     iterator.remove();
@@ -181,5 +181,9 @@ public class Mem2Reg {
     public boolean check(ArrayList<Entity> obj, Entity tmp) {
         if (obj.isEmpty()) return false;
         return obj.contains(tmp);
+    }
+
+    public boolean judgeThis(String str) {
+        return !str.contains("this_ptr") && str.contains("this");
     }
 }

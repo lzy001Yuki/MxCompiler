@@ -17,7 +17,7 @@ import parser.MxParser;
 import parser.MxLexer;
 import utils.MxErrorListener;
 import utils.Scope.GlobalScope;
-// pass: e floyd sort t1-74
+
 public class Test {
     public static void main(String[] args) throws Exception {
         InputStream input = System.in;
