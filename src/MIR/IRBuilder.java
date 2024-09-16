@@ -109,8 +109,8 @@ public class IRBuilder implements ASTVisitor {
         for (var funcDef: it.definition) {
             if (funcDef instanceof classDefNode) funcDef.accept(this);
             if (funcDef instanceof funcDefNode) {
-                curBlock = new block("entry", curFunc);
                 curFunc = globalScope.getIrFunction(((funcDefNode) funcDef).funcName);
+                curBlock = new block("entry", curFunc);
                 curFunc.addBlock(curBlock);
                 funcDef.accept(this);
             }
@@ -713,7 +713,7 @@ public class IRBuilder implements ASTVisitor {
         function func = new function(malloc_.irName, malloc_.type, false, null);
         classDefNode obj = globalScope.getClass(it.type.typeName);
         CallInst inst = new CallInst(func, it.entity);
-        if (currentScope.isInClass() != null) thisPtr = new localPtr(new localPtr(new classType(it.type.typeName), "this").type, "this_ptr");
+        if (currentScope.isInClass() == null) thisPtr = new localPtr(new localPtr(new classType(it.type.typeName), "this").type, "this_ptr");
         inst.para.add(new constInt(obj.varMap.size() * 4));
         curBlock.addInst(inst);
         function constr = globalScope.getIrFunction(it.type.typeName + "." + it.type.typeName);

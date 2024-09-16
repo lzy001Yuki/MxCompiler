@@ -17,8 +17,8 @@ import parser.MxParser;
 import parser.MxLexer;
 import utils.MxErrorListener;
 import utils.Scope.GlobalScope;
-// pass: e
-public class Main {
+// pass: e floyd bubble_sort selection_sort t1-3 t5-13 15-20 23-26 28-35 37-40 42-59 62 64-68 72-74
+public class Test {
     public static void main(String[] args) throws Exception {
         InputStream input = System.in;
         //var input = new FileInputStream("Compiler-Design-Implementation/testcases/codegen/t3.mx");
@@ -44,25 +44,14 @@ public class Main {
             cfgBuilder.buildCFG();
             DomTree domTree = new DomTree(globalScope);
             domTree.build();
-           var output = new PrintStream(new FileOutputStream("irOutput.txt"));
-            output.println(irBuilder);
             Mem2Reg optimizer = new Mem2Reg(irBuilder);
             optimizer.run(globalScope);
-            var output1 = new PrintStream(new FileOutputStream("irOptimizer.txt"));
-           output1.println(irBuilder);
             PhiElimination phiElimination = new PhiElimination(globalScope);
             phiElimination.run();
-//            var output4 = new PrintStream(new FileOutputStream("phiElimination.txt"));
-//            output4.println(irBuilder);
             InstSelector selector = new InstSelector(globalScope);
             selector.visit(globalScope);
-            var output5 = new PrintStream(new FileOutputStream("asm.txt"));
-            output5.println(selector.asmProgram);
             RegAllocator regAllocator = new RegAllocator(selector.asmProgram);
             regAllocator.run();
-            var output2 = new PrintStream(new FileOutputStream("tmp/test.s"));
-            output2.println(regAllocator);
-            //printBuiltin();
             System.out.println(regAllocator);
         } catch (Error error) {
             System.out.println(error.toString());

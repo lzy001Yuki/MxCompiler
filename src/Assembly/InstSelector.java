@@ -67,14 +67,18 @@ public class InstSelector implements IRVisitor {
     @Override
     public void visit(function it){
         VirtualReg.cnt = 0;
-        for (int i = 0; i < it.paraList.size(); i++) {
-            if (i < 7) it.paraList.get(i).operand = regs.getPhyReg("a" + i);
-            else it.paraList.get(i).operand = regs.getPhyReg("s0");
-        }
         for (var iter: it.blocks) {
             ASMBlock b = new ASMBlock(getLabel() + iter.lab);
             blockMap.put(getLabel() + iter.lab, b);
             curFunc.addBlock(b);
+        }
+        for (int i = 0; i < it.paraList.size(); i++) {
+            if (i < 7) it.paraList.get(i).operand = regs.getPhyReg("a" + i);
+            else it.paraList.get(i).operand = regs.getPhyReg("s0");
+            Reg paraCopy = new VirtualReg();
+            ASMBlock entryBlock = curFunc.blocks.getFirst();
+            entryBlock.addInst(new MvInst((Reg)it.paraList.get(i).operand, paraCopy));
+            it.paraList.get(i).operand = paraCopy;
         }
         for (var iter: it.blocks) {
             curBlock = blockMap.get(getLabel() + iter.lab);
@@ -165,8 +169,9 @@ public class InstSelector implements IRVisitor {
             tmp = new VirtualReg();
             curBlock.addInst(new LiInst(tmp, new Imm(it.index.getLast())));
         } else tmp = (Reg) it.index.getLast().operand;
-        curBlock.addInst(new ITypeInst("slli", tmp, tmp, new Imm(2)));
-        curBlock.addInst(new BinaryInst("add", (Reg) it.result.operand, tmp, (Reg)it.ptrVal.operand));
+        Reg tmp1 = new VirtualReg();
+        curBlock.addInst(new ITypeInst("slli", tmp, tmp1, new Imm(2)));
+        curBlock.addInst(new BinaryInst("add", (Reg) it.result.operand, tmp1, (Reg)it.ptrVal.operand));
     }
     @Override
     public void visit(IcmpInst it){
@@ -218,7 +223,7 @@ public class InstSelector implements IRVisitor {
     // currently no critical edge
     @Override
     public void visit(PhiInst it){
-        /*
+
         // phi elimination instead
         curBlock.addInst(new Comment(it.toString()));
         it.result.operand = new VirtualReg();
@@ -244,7 +249,7 @@ public class InstSelector implements IRVisitor {
         curFunc.allocSpace += 4;
         Reg mid1 = new VirtualReg();
         curBlock.addInst(new LoadInst("lw", mid1, mid, new Imm(0)));
-        curBlock.addInst(new MvInst(mid1, (Reg) it.result.operand));*/
+        curBlock.addInst(new MvInst(mid1, (Reg) it.result.operand));
     }
     @Override
     public void visit(MIR.Instruction.RetInst it){

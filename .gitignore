@@ -48,3 +48,5 @@ text.out
 builtin.s
 irOptimizer.txt
 phiElimination.txt
+.xmake
+input

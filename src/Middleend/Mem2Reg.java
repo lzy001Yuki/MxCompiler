@@ -69,7 +69,7 @@ public class Mem2Reg {
                     if (visited.contains(df)) continue;
                     visited.add(df);
                     queue.add(df);
-                    localVar phiRes = new localVar(((ptrType)collected.getKey().type).baseType, builder.rename(collected.getKey().irName));
+                    localVar phiRes = new localVar(((ptrType)collected.getKey().type).baseType, builder.rename(collected.getKey().irName + ".phi"));
                     PhiInst phi = new PhiInst(phiRes);
                     df.phiInsts.add(phi);
                     Phi2Name.put(phi, collected.getKey().irName);
@@ -82,14 +82,16 @@ public class Mem2Reg {
         ArrayList<String> curVar = new ArrayList<>();
         for (var phi: blk.phiInsts) {
             String name = Phi2Name.get(phi);
+            if (name == null) name = builder.generator.getName();
             pushCurVar(name, phi.result);
             curVar.add(name);
         }
         Iterator<Inst> iterator = blk.instructions.iterator();
+        Entity objectPtr = null;
         while (iterator.hasNext()) {
             Inst inst = iterator.next();
             if (inst instanceof LoadInst load) {
-                if (!load.pointer.irName.contains("array_ptr")) {
+                if (!load.pointer.irName.contains("array_ptr") && load.pointer != objectPtr) {
                     if (!(load.pointer instanceof globalVar)) {
                         Entity replaced = replaceName(load.pointer.irName);
                         inst.replaceOperand(load.pointer, replaced);
@@ -97,20 +99,23 @@ public class Mem2Reg {
                         curVar.add(load.result.irName);
                         iterator.remove();
                     }
+                } else {
+                    Entity replaced = replaceName(load.pointer.irName);
+                    if (replaced != null) inst.replaceOperand(load.pointer, replaced);
+                    objectPtr = null;
                 }
             } else if (inst instanceof StoreInst store) {
-                if (!store.pointer.irName.contains("malloc_ptr") && !store.pointer.irName.contains("next_ptr") && !store.pointer.irName.contains("array_ptr")) {
-                    if (!(store.pointer instanceof globalVar)) {
-                        pushCurVar(store.pointer.irName, store.value);
-                        curVar.add(store.pointer.irName);
-                        iterator.remove();
-                    }
+                if (!store.pointer.irName.contains("malloc_ptr") && !store.pointer.irName.contains("next_ptr") && !store.pointer.irName.contains("array_ptr") && !(store.pointer instanceof globalVar) && store.pointer != objectPtr) {
+                    pushCurVar(store.pointer.irName, store.value);
+                    curVar.add(store.pointer.irName);
+                    iterator.remove();
                 } else {
                     Entity replaced = replaceName(store.value.irName);
                     if (replaced != null) inst.replaceOperand(store.value, replaced);
+                    objectPtr = null;
                 }
             } else if (inst instanceof AllocaInst alloca) {
-                // do nothing
+                objectPtr = null;
                 if (alloca.allocType instanceof intType) {
                     pushCurVar(alloca.result.irName, new constInt(0));
                     curVar.add(alloca.result.irName);
@@ -123,11 +128,14 @@ public class Mem2Reg {
                 }
             } else {
                 for (var uses: inst.getUses()) {
-                    if (!uses.irName.contains("malloc_ptr")) {
+                    if (uses.irName != null &&!uses.irName.contains("malloc_ptr")) {
                         Entity replaced = replaceName(uses.irName);
                         if (replaced != null) inst.replaceOperand(uses, replaced);
                     }
                 }
+                if (inst instanceof GetelementInst) {
+                    objectPtr = ((GetelementInst) inst).result;
+                } else objectPtr = null;
             }
         }
         for (var nxt: blk.next) {
