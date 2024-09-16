@@ -17,7 +17,7 @@ import parser.MxParser;
 import parser.MxLexer;
 import utils.MxErrorListener;
 import utils.Scope.GlobalScope;
-// pass: e floyd bubble_sort selection_sort t1-3 t5-13 15-20 23-26 28-35 37-40 42-59 62 64-68 72-74
+// pass: e floyd sort t1-74
 public class Test {
     public static void main(String[] args) throws Exception {
         InputStream input = System.in;

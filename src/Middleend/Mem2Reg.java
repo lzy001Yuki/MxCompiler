@@ -40,7 +40,7 @@ public class Mem2Reg {
                 if (inst instanceof AllocaInst) {
                     collectAlloca.put(((AllocaInst) inst).result, new HashSet<>());
                     if (!blk.equals(func.blocks.getFirst())) {
-                        func.blocks.getFirst().addInst(inst);
+                        func.blocks.getFirst().instructions.addFirst(inst);
                         iterator.remove();
                     }
                 }
@@ -87,11 +87,11 @@ public class Mem2Reg {
             curVar.add(name);
         }
         Iterator<Inst> iterator = blk.instructions.iterator();
-        Entity objectPtr = null;
+        ArrayList<Entity> objectPtr = new ArrayList<>();
         while (iterator.hasNext()) {
             Inst inst = iterator.next();
             if (inst instanceof LoadInst load) {
-                if (!load.pointer.irName.contains("array_ptr") && load.pointer != objectPtr) {
+                if (!load.pointer.irName.contains("array_ptr") && !check(objectPtr, load.pointer)) {
                     if (!(load.pointer instanceof globalVar)) {
                         Entity replaced = replaceName(load.pointer.irName);
                         inst.replaceOperand(load.pointer, replaced);
@@ -101,21 +101,20 @@ public class Mem2Reg {
                     }
                 } else {
                     Entity replaced = replaceName(load.pointer.irName);
+                    if (check(objectPtr, load.pointer)) objectPtr.remove(load.pointer);
                     if (replaced != null) inst.replaceOperand(load.pointer, replaced);
-                    objectPtr = null;
                 }
             } else if (inst instanceof StoreInst store) {
-                if (!store.pointer.irName.contains("malloc_ptr") && !store.pointer.irName.contains("next_ptr") && !store.pointer.irName.contains("array_ptr") && !(store.pointer instanceof globalVar) && store.pointer != objectPtr) {
+                if (!store.pointer.irName.contains("malloc_ptr") && !store.pointer.irName.contains("next_ptr") && !store.pointer.irName.contains("array_ptr") && !(store.pointer instanceof globalVar) && !check(objectPtr, store.pointer)) {
                     pushCurVar(store.pointer.irName, store.value);
                     curVar.add(store.pointer.irName);
                     iterator.remove();
                 } else {
                     Entity replaced = replaceName(store.value.irName);
+                    if (check(objectPtr, store.pointer)) objectPtr.remove(store.pointer);
                     if (replaced != null) inst.replaceOperand(store.value, replaced);
-                    objectPtr = null;
                 }
             } else if (inst instanceof AllocaInst alloca) {
-                objectPtr = null;
                 if (alloca.allocType instanceof intType) {
                     pushCurVar(alloca.result.irName, new constInt(0));
                     curVar.add(alloca.result.irName);
@@ -134,8 +133,8 @@ public class Mem2Reg {
                     }
                 }
                 if (inst instanceof GetelementInst) {
-                    objectPtr = ((GetelementInst) inst).result;
-                } else objectPtr = null;
+                    objectPtr.add(((GetelementInst) inst).result);
+                }
             }
         }
         for (var nxt: blk.next) {
@@ -143,6 +142,12 @@ public class Mem2Reg {
                 String name = Phi2Name.get(phi);
                 if (name != null) {
                     phi.jump.add(new Pair<>(replaceName(name), blk.lab));
+                } else {
+                    // this phiInst is original constructed
+                    for (var iter: phi.jump) {
+                        Entity replaced = replaceName(iter.getFirst().irName);
+                        if (replaced != null) phi.replaceOperand(iter.getFirst(), replaced);
+                    }
                 }
             }
         }
@@ -171,5 +176,10 @@ public class Mem2Reg {
             curname = replace1.irName;
         }
         return replace1;
+    }
+
+    public boolean check(ArrayList<Entity> obj, Entity tmp) {
+        if (obj.isEmpty()) return false;
+        return obj.contains(tmp);
     }
 }

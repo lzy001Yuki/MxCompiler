@@ -52,8 +52,8 @@ public class Main {
            output1.println(irBuilder);
             PhiElimination phiElimination = new PhiElimination(globalScope);
             phiElimination.run();
-//            var output4 = new PrintStream(new FileOutputStream("phiElimination.txt"));
-//            output4.println(irBuilder);
+            var output4 = new PrintStream(new FileOutputStream("phiElimination.txt"));
+            output4.println(irBuilder);
             InstSelector selector = new InstSelector(globalScope);
             selector.visit(globalScope);
             var output5 = new PrintStream(new FileOutputStream("asm.txt"));

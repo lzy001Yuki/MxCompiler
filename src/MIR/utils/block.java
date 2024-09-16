@@ -43,6 +43,7 @@ public class block {
             ans.append("\t").append(phi).append("\n");
         }
         for (var inst: instructions) {
+            if (inst instanceof PhiInst) continue;
             ans.append("\t").append(inst).append("\n");
         }
         return ans.toString();

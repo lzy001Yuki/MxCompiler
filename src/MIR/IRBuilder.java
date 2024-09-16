@@ -319,6 +319,7 @@ public class IRBuilder implements ASTVisitor {
             inst4.jump.add(new Pair<>(new constBool(true), shortTrue));
             inst4.jump.add(new Pair<>(new constBool(false), shortFalse));
             curBlock.phiInsts.add(inst4);
+           // curBlock.addInst(inst4);
             it.entity = local;
             return;
         }
@@ -461,6 +462,7 @@ public class IRBuilder implements ASTVisitor {
             inst1.jump.add(new Pair<>(trueVar, trueStr));
             inst1.jump.add(new Pair<>(falseVar, falseStr));
             curBlock.phiInsts.add(inst1);
+            //curBlock.addInst(inst1);
             return res;
         } else if (expr.type.typeName.equals("string")) {
             if (ptr != null) {
@@ -643,6 +645,7 @@ public class IRBuilder implements ASTVisitor {
             inst2.jump.add(br1);
             inst2.jump.add(br2);
             curBlock.phiInsts.add(inst2);
+           // curBlock.addInst(inst2);
             if (it.expr2.entity instanceof constString) {
                 localVar copy = new localVar(new ptrType(it.expr2.entity.type), generator.getName());
                 curBlock.addInst(new AllocaInst(copy, copy.type, null));
