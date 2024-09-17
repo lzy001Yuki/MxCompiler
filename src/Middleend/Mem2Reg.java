@@ -101,7 +101,7 @@ public class Mem2Reg {
                     }
                 } else {
                     Entity replaced = replaceName(load.pointer.irName);
-                    if (check(objectPtr, load.pointer)) objectPtr.remove(load.pointer);
+                    //if (check(objectPtr, load.pointer)) objectPtr.remove(load.pointer);
                     if (replaced != null) inst.replaceOperand(load.pointer, replaced);
                 }
             } else if (inst instanceof StoreInst store) {
@@ -111,7 +111,7 @@ public class Mem2Reg {
                     iterator.remove();
                 } else {
                     Entity replaced = replaceName(store.value.irName);
-                    if (check(objectPtr, store.pointer)) objectPtr.remove(store.pointer);
+//                    if (check(objectPtr, store.pointer)) objectPtr.remove(store.pointer);
                     if (replaced != null) inst.replaceOperand(store.value, replaced);
                 }
             } else if (inst instanceof AllocaInst alloca) {
