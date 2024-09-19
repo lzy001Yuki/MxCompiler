@@ -19,5 +19,7 @@ public class Optimizer {
         optimizer.run(globalScope);
         PhiElimination phiElimination = new PhiElimination(globalScope);
         phiElimination.run();
+        DeadCodeElimination deadCodeElimination = new DeadCodeElimination(globalScope);
+        deadCodeElimination.run();
     }
 }

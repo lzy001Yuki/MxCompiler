@@ -8,6 +8,7 @@ import MIR.type.IRType;
 import java.util.ArrayList;
 
 public abstract class Inst{
+    public boolean isDead = false;
     abstract public String toString();
     abstract public void accept(IRVisitor visitor);
     abstract public ArrayList<Entity> getUses();
