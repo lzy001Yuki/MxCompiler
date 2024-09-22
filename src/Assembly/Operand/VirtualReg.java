@@ -1,5 +1,7 @@
 package Assembly.Operand;
 
+import java.util.HashSet;
+
 // store address(relative to s0, actually points to the address)
 public class VirtualReg extends Reg{
     public int index;
@@ -7,6 +9,8 @@ public class VirtualReg extends Reg{
     public VirtualReg() {
         index = cnt;
         cnt++;
+        adjList = new HashSet<>();
+        moveList = new HashSet<>();
     }
     @Override
     public String toString() {

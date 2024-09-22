@@ -4,6 +4,7 @@ import Assembly.Operand.Operand;
 import Assembly.Operand.Reg;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public abstract class ASMInst extends Operand {
     public Reg rs1, rs2, rd;
@@ -12,8 +13,8 @@ public abstract class ASMInst extends Operand {
         this.rs2 = rs2;
         this.rd = rd;
     }
-    public ArrayList<Reg> getUse() {
-        ArrayList<Reg> uses = new ArrayList<>();
+    public HashSet<Reg> getUse() {
+        HashSet<Reg> uses = new HashSet<>();
         if (rs1 != null) uses.add(rs1);
         if (rs2 != null) uses.add(rs2);
         return uses;
