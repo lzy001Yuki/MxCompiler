@@ -5,7 +5,7 @@ import Assembly.Operand.PhysicReg;
 import java.util.HashMap;
 
 public class RegStore {
-    private final HashMap<String, PhysicReg> regs = new HashMap<>();
+    public final HashMap<String, PhysicReg> regs = new HashMap<>();
     public RegStore() {
         regs.put("zero", new PhysicReg("zero"));
         regs.put("ra", new PhysicReg("ra"));

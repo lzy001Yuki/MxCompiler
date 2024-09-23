@@ -10,6 +10,8 @@ public class PhysicReg extends Reg{
         this.name = str;
         adjList = new HashSet<>();
         moveList = new HashSet<>();
+        degree = Integer.MAX_VALUE;
+        color = this;
     }
     @Override
     public String toString() {
