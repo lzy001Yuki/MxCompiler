@@ -4,12 +4,14 @@ import Assembly.Inst.ASMInst;
 import Assembly.Operand.Operand;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 public class ASMFunction extends Operand {
     public String name;
     public ArrayList<ASMBlock> blocks;
     public int virtualNum = 0;
     public int allocSpace = 0;
+    public int spilledSpace = 0;
     public ASMFunction(String name) {
         this.name = name;
         blocks = new ArrayList<>();

@@ -1,11 +1,13 @@
 package Assembly;
 
+import Assembly.Inst.ASMInst;
 import Assembly.Inst.MvInst;
 import Assembly.Operand.Reg;
 import Assembly.Operand.VirtualReg;
 import Assembly.utils.CGBuilder;
 import Assembly.utils.CGEdge;
 import Assembly.utils.RegStore;
+import MIR.Instruction.Inst;
 import Middleend.LivenessAnalysis;
 
 import java.util.*;
@@ -29,6 +31,7 @@ public class AdvRegAllocator {
     public HashSet<Reg> spilledNodes = new HashSet<>();
     public HashSet<MvInst> constrainedMoves = new HashSet<>();
     public HashSet<MvInst> frozenMoves = new HashSet<>();
+    public HashSet<Reg> newTemps = new HashSet<>();
     public HashSet<CGEdge> adjSet;
     public CGBuilder builder;
     public AdvRegAllocator(ASMProgram program) {
@@ -38,9 +41,8 @@ public class AdvRegAllocator {
     public void run() {
         for (var func: program.text) {
             coloring(func);
-            for (var blk: func.blocks) {
-                blk.inst.removeIf(inst -> inst instanceof MvInst mv && mv.rs1.color == mv.rd.color);
-            }
+            // allocate Regs
+            allocateRegs(func);
         }
     }
 
@@ -59,8 +61,29 @@ public class AdvRegAllocator {
         } while (!simplifyWorklist.isEmpty() || !worklistMoves.isEmpty() || !freezeWorklist.isEmpty() || spillWorklist.isEmpty());
         AssignColors();
         if (!spilledNodes.isEmpty()) {
-            rewriteProgram();
+            rewriteProgram(func);
             coloring(func);
+        }
+    }
+
+    public void allocateRegs(ASMFunction func) {
+        for (var blk: func.blocks) {
+            LinkedList<ASMInst> newInst = new LinkedList<>();
+            for (var inst: blk.inst) {
+                if (inst.rs1 instanceof VirtualReg) {
+                    inst.rs1 = inst.rs1.color;
+                }
+                if (inst.rs2 instanceof VirtualReg) {
+                    inst.rs2 = inst.rs2.color;
+                }
+                if (inst.rd instanceof VirtualReg) {
+                    inst.rd = inst.rd.color;
+                }
+                if (!(inst instanceof MvInst) || inst.rs1 != inst.rd) {
+                    newInst.add(inst);
+                }
+            }
+            blk.inst = newInst;
         }
     }
 
@@ -315,7 +338,19 @@ public class AdvRegAllocator {
             n.color = GetAlias(n).color;
         }
     }
-    public void rewriteProgram() {
+    public void rewriteProgram(ASMFunction func) {
+        for (var Reg: spilledNodes) {
+            func.spilledSpace+= 4;
+        }
+        for (var blk: func.blocks) {
+            LinkedList<ASMInst> newInst = new LinkedList<>();
+            for (var inst: blk.inst) {
+                if (spilledNodes.contains(inst.rs1)) {
+                    VirtualReg spillReg = new VirtualReg();
+                    newTemps.add(spillReg);
 
+                }
+            }
+        }
     }
 }

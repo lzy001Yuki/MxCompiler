@@ -27,7 +27,7 @@ public class RegAllocator {
 
     public void run() {
         for (var func: program.text) {
-            allocSpace = func.allocSpace;
+            allocSpace = func.allocSpace + func.spilledSpace;
             usedRegNum = 0;
             idleReg.clear();
             ArrayList<Pair<ASMBlock, Integer>> retInsts = new ArrayList<>();
