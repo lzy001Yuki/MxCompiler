@@ -34,7 +34,7 @@ public class CGBuilder {
                     worklistMoves.add(curMv);
                 }
                 for (var live: curLive) {
-                    addEdge(live, curInst.getDef());
+                    if (curInst.getDef() != null) addEdge(live, curInst.getDef());
                 }
                 curLive.addAll(curInst.getUse());
             }

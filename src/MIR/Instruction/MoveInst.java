@@ -18,11 +18,13 @@ public class MoveInst extends Inst{
         return "move " + dest.getName() + ", " + src.getName();
     }
     public ArrayList<Entity> getUses(){
-        return new ArrayList<>();
+        ArrayList<Entity> uses = new ArrayList<>();
+        uses.add(src);
+        return uses;
     }
     @Override
     public Entity getDef(){
-        return null;
+        return dest;
     }
     @Override
     public void replaceOperand(Entity old, Entity replace) {

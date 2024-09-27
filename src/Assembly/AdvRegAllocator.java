@@ -1,7 +1,7 @@
 package Assembly;
 
-import Assembly.Inst.ASMInst;
-import Assembly.Inst.MvInst;
+import Assembly.Inst.*;
+import Assembly.Operand.Imm;
 import Assembly.Operand.Reg;
 import Assembly.Operand.VirtualReg;
 import Assembly.utils.CGBuilder;
@@ -32,7 +32,7 @@ public class AdvRegAllocator {
     public HashSet<MvInst> constrainedMoves = new HashSet<>();
     public HashSet<MvInst> frozenMoves = new HashSet<>();
     public HashSet<Reg> newTemps = new HashSet<>();
-    public HashSet<CGEdge> adjSet;
+    public HashSet<CGEdge> adjSet = new HashSet<>();
     public CGBuilder builder;
     public AdvRegAllocator(ASMProgram program) {
         this.program = program;
@@ -58,7 +58,7 @@ public class AdvRegAllocator {
             else if (!worklistMoves.isEmpty()) Coalesce();
             else if (!freezeWorklist.isEmpty()) Freeze();
             else if (!spillWorklist.isEmpty()) SelectSpill();
-        } while (!simplifyWorklist.isEmpty() || !worklistMoves.isEmpty() || !freezeWorklist.isEmpty() || spillWorklist.isEmpty());
+        } while (!simplifyWorklist.isEmpty() || !worklistMoves.isEmpty() || !freezeWorklist.isEmpty() || !spillWorklist.isEmpty());
         AssignColors();
         if (!spilledNodes.isEmpty()) {
             rewriteProgram(func);
@@ -67,9 +67,13 @@ public class AdvRegAllocator {
     }
 
     public void allocateRegs(ASMFunction func) {
+        ArrayList<ASMBlock> retBlock = new ArrayList<>();
         for (var blk: func.blocks) {
             LinkedList<ASMInst> newInst = new LinkedList<>();
             for (var inst: blk.inst) {
+                if (inst instanceof RetInst && !retBlock.contains(blk)) {
+                    retBlock.add(blk);
+                }
                 if (inst.rs1 instanceof VirtualReg) {
                     inst.rs1 = inst.rs1.color;
                 }
@@ -84,6 +88,15 @@ public class AdvRegAllocator {
                 }
             }
             blk.inst = newInst;
+        }
+        ASMBlock entryBlk = func.blocks.getFirst();
+        int totalSpace = func.allocSpace + func.spilledSpace + 4 * func.virtualNum;
+        int stackSpace = (totalSpace + 15) / 16 * 16;
+        ITypeInst in = new ITypeInst("addi", regStore.getPhyReg("sp"), regStore.getPhyReg("sp"), new Imm(-stackSpace));
+        ITypeInst out = new ITypeInst("addi", regStore.getPhyReg("sp"), regStore.getPhyReg("sp"), new Imm(stackSpace));
+        checkImm(entryBlk.inst, in, 0, in.imm);
+        for (var retBlk: retBlock) {
+            checkImm(retBlk.inst, out, retBlk.inst.size() - 1, out.imm);
         }
     }
 
@@ -106,10 +119,12 @@ public class AdvRegAllocator {
             for (var inst: blk.inst) {
                 if (inst.getDef() instanceof VirtualReg) {
                     inst.getDef().init();
+                    initial.add(inst.getDef());
                     inst.getDef().defNum++;
                 }
                 for (var use: inst.getUse()) {
                     if (use instanceof VirtualReg) use.init();
+                    initial.add(use);
                     use.useNum++;
                 }
             }
@@ -339,8 +354,10 @@ public class AdvRegAllocator {
         }
     }
     public void rewriteProgram(ASMFunction func) {
-        for (var Reg: spilledNodes) {
-            func.spilledSpace+= 4;
+        HashMap<Reg, Integer> spillToMem = new HashMap<>();
+        for (var spill: spilledNodes) {
+            spillToMem.put(spill, func.spilledSpace);
+            func.spilledSpace += 4;
         }
         for (var blk: func.blocks) {
             LinkedList<ASMInst> newInst = new LinkedList<>();
@@ -348,9 +365,62 @@ public class AdvRegAllocator {
                 if (spilledNodes.contains(inst.rs1)) {
                     VirtualReg spillReg = new VirtualReg();
                     newTemps.add(spillReg);
-
+                    LoadInst newLoad = new LoadInst("lw", spillReg, regStore.getPhyReg("sp"), new Imm(func.allocSpace + spillToMem.get(inst.rs1)));
+                    allocate(newLoad, newInst);
+                    inst.rs1 = spillReg;
+                }
+                if (spilledNodes.contains(inst.rs2)) {
+                    VirtualReg spillReg = new VirtualReg();
+                    newTemps.add(spillReg);
+                    LoadInst newLoad = new LoadInst("lw", spillReg, regStore.getPhyReg("sp"), new Imm(func.allocSpace + spillToMem.get(inst.rs2)));
+                    allocate(newLoad, newInst);
+                    inst.rs2 = spillReg;
+                }
+                if (inst instanceof ITypeInst i) checkImm(newInst, inst, newInst.size() - 1, i.imm);
+                else newInst.add(inst);
+                if (spilledNodes.contains(inst.rd)) {
+                    VirtualReg spillReg = new VirtualReg();
+                    newTemps.add(spillReg);
+                    StoreInst newStore = new StoreInst("sw", spillReg, regStore.getPhyReg("sp"), new Imm(func.allocSpace + spillToMem.get(inst.rd)));
+                    allocate(newStore, newInst);
+                    inst.rd = spillReg;
                 }
             }
+            blk.inst = newInst;
         }
+    }
+
+    public boolean checkImm(LinkedList<ASMInst> insts, ASMInst inst, int pos, Imm imm) {
+        if (imm.value < 2047 && imm.value > -2048) {
+            insts.add(pos, inst);
+            return true;
+        } else {
+            insts.add(pos, new LiInst(inst.rd, imm));
+            insts.add(pos + 1, new BinaryInst("add", inst.rs1, inst.rd, inst.rd));
+            return false;
+        }
+    }
+
+    public void allocate(ASMInst inst, LinkedList<ASMInst> newInst) {
+        if (inst instanceof LoadInst load) {
+            if (!checkImm(newInst, inst, newInst.size() - 1, load.offset)) {
+                newInst.add(new LoadInst("lw", inst.rd, inst.rd, new Imm(0)));
+            }
+        } else if (inst instanceof StoreInst store) {
+            if (store.offset.value < 2047 && store.offset.value > -2048) {
+                newInst.add(inst);
+            } else {
+                VirtualReg address = new VirtualReg();
+                newTemps.add(address);
+                newInst.add(new LiInst(address, store.offset));
+                newInst.add(new BinaryInst("add", address, regStore.getPhyReg("sp"), address));
+                newInst.add(new StoreInst("sw", inst.rs2, address, new Imm(0)));
+            }
+        }
+    }
+
+    @Override
+    public String toString() {
+        return program.toString();
     }
 }

@@ -1,5 +1,6 @@
 import java.io.*;
 
+import Assembly.AdvRegAllocator;
 import Assembly.InstSelector;
 import Assembly.RegAllocator;
 import MIR.IRBuilder;
@@ -49,12 +50,14 @@ public class Main {
             selector.visit(globalScope);
             var output5 = new PrintStream(new FileOutputStream("asm.txt"));
             output5.println(selector.asmProgram);
-            RegAllocator regAllocator = new RegAllocator(selector.asmProgram);
-            regAllocator.run();
+//            RegAllocator regAllocator = new RegAllocator(selector.asmProgram);
+//            regAllocator.run();
+            AdvRegAllocator advRegAllocator = new AdvRegAllocator(selector.asmProgram);
+            advRegAllocator.run();
             var output2 = new PrintStream(new FileOutputStream("tmp/test.s"));
-            output2.println(regAllocator);
+            output2.println(advRegAllocator);
             //printBuiltin();
-            System.out.println(regAllocator);
+            System.out.println(advRegAllocator);
         } catch (Error error) {
             System.out.println(error.toString());
             System.exit(1);

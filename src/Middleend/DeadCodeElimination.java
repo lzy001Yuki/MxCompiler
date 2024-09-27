@@ -35,16 +35,23 @@ public class DeadCodeElimination {
                     entity2use.get(use).add(inst);
                 }
             }
-            while (!defs.isEmpty()) {
-                Entity def = defs.removeFirst();
-                if (entity2use.containsKey(def) && !entity2use.get(def).isEmpty()) continue;
-                Inst defInst = entity2def.get(def);
-                if (defInst instanceof CallInst) continue;
-                blk.instructions.remove(defInst);
-                for (var use: defInst.getUses()) {
-                    entity2use.get(use).remove(defInst);
-                    if (!defs.contains(use)) defs.add(use);
-                }
+        }
+        while (!defs.isEmpty()) {
+            Entity def = defs.removeFirst();
+            if (entity2use.containsKey(def) && !entity2use.get(def).isEmpty()) continue;
+            Inst defInst = entity2def.get(def);
+            if (defInst instanceof CallInst) continue;
+            defInst.isDead = true;
+            for (var use: defInst.getUses()) {
+                entity2use.get(use).remove(defInst);
+                if (!defs.contains(use)) defs.add(use);
+            }
+        }
+
+        for (var blk: func.blocks) {
+            var iter = blk.instructions.iterator();
+            while (iter.hasNext()) {
+                if (iter.next().isDead) iter.remove();
             }
         }
     }
