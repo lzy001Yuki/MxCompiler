@@ -10,12 +10,20 @@ import java.util.Queue;
 
 public class LivenessAnalysis {
     public void run(ASMFunction func) {
-        for (var blk: func.blocks) collect(blk);
-
+        var iter = func.blocks.iterator();
+        //ASMBlock lastBlk = null;
         // propagate in the reverse order
-        ASMBlock lastBlk = func.blocks.getLast();
         LinkedList<ASMBlock> queue = new LinkedList<>();
-        queue.add(lastBlk);
+        while (iter.hasNext()) {
+            var blk = iter.next();
+            collect(blk);
+            //if (!blk.prev.isEmpty() || blk == func.blocks.getFirst()) lastBlk = blk;
+            if (!blk.prev.isEmpty() || blk == func.blocks.getFirst()) {
+                if (blk.next.isEmpty()) queue.add(blk);
+            }
+        }
+
+        //queue.add(lastBlk);
         while (!queue.isEmpty()) {
             ASMBlock curBlk = queue.pollFirst();
             HashSet<Reg> newOut = new HashSet<>();
