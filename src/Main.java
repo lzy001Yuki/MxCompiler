@@ -38,18 +38,18 @@ public class Main {
             checker.visit(root);
             IRBuilder irBuilder = new IRBuilder(globalScope);
             irBuilder.visit(root);
-           var output = new PrintStream(new FileOutputStream("irOutput.txt"));
-            output.println(irBuilder);
+//           var output = new PrintStream(new FileOutputStream("irOutput.txt"));
+//            output.println(irBuilder);
             Optimizer optimizer = new Optimizer(globalScope, irBuilder);
             optimizer.run();
-            var output1 = new PrintStream(new FileOutputStream("irOptimizer.txt"));
-            output1.println(irBuilder);
+//            var output1 = new PrintStream(new FileOutputStream("irOptimizer.txt"));
+//            output1.println(irBuilder);
 //            var output4 = new PrintStream(new FileOutputStream("phiElimination.txt"));
 //            output4.println(irBuilder);
             InstSelector selector = new InstSelector(globalScope);
             selector.visit(globalScope);
-            var output5 = new PrintStream(new FileOutputStream("asm.txt"));
-            output5.println(selector.asmProgram);
+//            var output5 = new PrintStream(new FileOutputStream("asm.txt"));
+//            output5.println(selector.asmProgram);
 //            RegAllocator regAllocator = new RegAllocator(selector.asmProgram);
 //            regAllocator.run();
 //            var output2 = new PrintStream(new FileOutputStream("tmp/test.s"));
@@ -57,8 +57,9 @@ public class Main {
 //            System.out.println(regAllocator);
             AdvRegAllocator advregAllocator = new AdvRegAllocator(selector.asmProgram);
             advregAllocator.run();
-            var output2 = new PrintStream(new FileOutputStream("tmp/test.s"));
-            output2.println(advregAllocator);
+//            var output2 = new PrintStream(new FileOutputStream("tmp/test.s"));
+//            output2.println(advregAllocator);
+            printBuiltin();
             System.out.println(advregAllocator);
         } catch (Error error) {
             System.out.println(error.toString());
