@@ -27,7 +27,7 @@ public class InstSelector implements IRVisitor {
     public ASMBlock curBlock;
     public ASMFunction curFunc;
     public int funcNum = 0;
-    public RegStore regs;
+    //public RegStore regs;
     public ASMProgram asmProgram;
     public HashMap<String, ASMBlock> blockMap;
     public int cnt = 0;
@@ -35,7 +35,7 @@ public class InstSelector implements IRVisitor {
     public InstSelector(GlobalScope global) {
         globalScope = global;
         asmProgram = new ASMProgram();
-        regs = new RegStore();
+        //regs = new RegStore();
         blockMap = new HashMap<>();
     }
     @Override
@@ -73,8 +73,8 @@ public class InstSelector implements IRVisitor {
             curFunc.addBlock(b);
         }
         for (int i = 0; i < it.paraList.size(); i++) {
-            if (i < 7) it.paraList.get(i).operand = regs.getPhyReg("a" + i);
-            else it.paraList.get(i).operand = regs.getPhyReg("s0");
+            if (i < 7) it.paraList.get(i).operand = RegStore.regs.get("a" + i);
+            else it.paraList.get(i).operand = RegStore.regs.get("s0");
             Reg paraCopy = new VirtualReg();
             ASMBlock entryBlock = curFunc.blocks.getFirst();
             entryBlock.addInst(new MvInst((Reg)it.paraList.get(i).operand, paraCopy));
@@ -84,12 +84,19 @@ public class InstSelector implements IRVisitor {
             curBlock = blockMap.get(getLabel() + iter.lab);
             iter.accept(this);
         }
+
+        // callee process
+        for (var callee: RegStore.calleeSave()) {
+            VirtualReg reg = new VirtualReg();
+            curFunc.blocks.getFirst().inst.addFirst(new MvInst(callee, reg));
+            curFunc.blocks.getLast().inst.add(curFunc.blocks.getLast().inst.size() - 1, new MvInst(reg, callee));
+        }
     }
     @Override
     public void visit(AllocaInst it){
         curBlock.addInst(new Comment(it.toString()));
         it.result.operand = new VirtualReg();
-        curBlock.addInst(new ITypeInst("addi", regs.getPhyReg("sp"), (VirtualReg) it.result.operand, new Imm(curFunc.allocSpace)));
+        curBlock.addInst(new ITypeInst("addi", RegStore.regs.get("sp"), (VirtualReg) it.result.operand, new Imm(curFunc.allocSpace)));
         curFunc.allocSpace += 4;
     }
     @Override
@@ -140,25 +147,25 @@ public class InstSelector implements IRVisitor {
         curBlock.addInst(new Comment(it.toString()));
         // sp-4 store return address
         reserveSpace -= 4;
-        curBlock.addInst(new StoreInst("sw", regs.getPhyReg("ra"), regs.getPhyReg("sp"), new Imm(reserveSpace)));
+        curBlock.addInst(new StoreInst("sw", RegStore.regs.get("ra"), RegStore.regs.get("sp"), new Imm(reserveSpace)));
         for (int i = 0; i < it.para.size(); i++) {
             if (i < 8) {
                 Reg paraReg = getVirReg(it.para.get(i));
-                curBlock.addInst(new MvInst(paraReg, regs.getPhyReg("a" + i)));
+                curBlock.addInst(new MvInst(paraReg, RegStore.regs.get("a" + i)));
             } else {
                 reserveSpace -= 4;
                 Reg paraReg = getVirReg(it.para.get(i));
-                curBlock.addInst(new StoreInst("sw", paraReg, regs.getPhyReg("sp"), new Imm(reserveSpace)));
+                curBlock.addInst(new StoreInst("sw", paraReg, RegStore.regs.get("sp"), new Imm(reserveSpace)));
             }
         }
-        curBlock.addInst(new ITypeInst("addi", regs.getPhyReg("sp"), regs.getPhyReg("sp"), new Imm(reserveSpace)));
+        curBlock.addInst(new ITypeInst("addi", RegStore.regs.get("sp"), RegStore.regs.get("sp"), new Imm(reserveSpace)));
         curBlock.addInst(new CallInst(it.funcName));
-        curBlock.addInst(new ITypeInst("addi", regs.getPhyReg("sp"), regs.getPhyReg("sp"), new Imm(-reserveSpace)));
+        curBlock.addInst(new ITypeInst("addi", RegStore.regs.get("sp"), RegStore.regs.get("sp"), new Imm(-reserveSpace)));
         if (!(it.ret.type instanceof voidType)) {
             it.ret.operand = new VirtualReg();
-            curBlock.addInst(new MvInst((regs.getPhyReg("a0")), (Reg) it.ret.operand));
+            curBlock.addInst(new MvInst((RegStore.regs.get("a0")), (Reg) it.ret.operand));
         }
-        curBlock.addInst(new LoadInst("lw", regs.getPhyReg("ra"), regs.getPhyReg("sp"), new Imm(-4)));
+        curBlock.addInst(new LoadInst("lw", RegStore.regs.get("ra"), RegStore.regs.get("sp"), new Imm(-4)));
     }
     @Override
     public void visit(GetelementInst it){
@@ -196,7 +203,7 @@ public class InstSelector implements IRVisitor {
                 Reg equalReg = new VirtualReg();
                 curBlock.addInst(new BinaryInst("sub", lessReg, lhs, rhs));
                 curBlock.addInst(new BinaryInst("seqz", equalReg, lessReg, null));
-                curBlock.addInst(new BinaryInst("slt", lessReg, lessReg, regs.getPhyReg("zero")));
+                curBlock.addInst(new BinaryInst("slt", lessReg, lessReg, RegStore.regs.get("zero")));
                 curBlock.addInst(new BinaryInst("or", (Reg) it.result.operand, lessReg, equalReg));
             }
             case "sge" -> {
@@ -204,7 +211,7 @@ public class InstSelector implements IRVisitor {
                 Reg equalReg = new VirtualReg();
                 curBlock.addInst(new BinaryInst("sub", lessReg, lhs, rhs));
                 curBlock.addInst(new BinaryInst("seqz", equalReg, lessReg, null));
-                curBlock.addInst(new BinaryInst("slt", lessReg, regs.getPhyReg("zero"), lessReg));
+                curBlock.addInst(new BinaryInst("slt", lessReg, RegStore.regs.get("zero"), lessReg));
                 curBlock.addInst(new BinaryInst("or", (Reg) it.result.operand, lessReg, equalReg));
             }
         }
@@ -238,10 +245,10 @@ public class InstSelector implements IRVisitor {
         Reg mid = new VirtualReg();
         Reg newReg1 = judgeReg(it.jump.get(0).getFirst());
         Reg newReg2 = judgeReg(it.jump.get(1).getFirst());
-        if (preBlock1.inst.isEmpty()) preBlock1.inst.add(new ITypeInst("addi", regs.getPhyReg("sp"), mid, new Imm(curFunc.allocSpace)));
-        else preBlock1.inst.add(preBlock1.inst.size() - 1, new ITypeInst("addi", regs.getPhyReg("sp"), mid, new Imm(curFunc.allocSpace)));
-        if (preBlock2.inst.isEmpty()) preBlock2.inst.add(new ITypeInst("addi", regs.getPhyReg("sp"), mid, new Imm(curFunc.allocSpace)));
-        else preBlock2.inst.add(preBlock2.inst.size() - 1, new ITypeInst("addi", regs.getPhyReg("sp"), mid, new Imm(curFunc.allocSpace)));
+        if (preBlock1.inst.isEmpty()) preBlock1.inst.add(new ITypeInst("addi", RegStore.regs.get("sp"), mid, new Imm(curFunc.allocSpace)));
+        else preBlock1.inst.add(preBlock1.inst.size() - 1, new ITypeInst("addi", RegStore.regs.get("sp"), mid, new Imm(curFunc.allocSpace)));
+        if (preBlock2.inst.isEmpty()) preBlock2.inst.add(new ITypeInst("addi", RegStore.regs.get("sp"), mid, new Imm(curFunc.allocSpace)));
+        else preBlock2.inst.add(preBlock2.inst.size() - 1, new ITypeInst("addi", RegStore.regs.get("sp"), mid, new Imm(curFunc.allocSpace)));
         addVirReg(it.jump.get(1).getFirst(), newReg2, preBlock2);
         addVirReg(it.jump.get(0).getFirst(), newReg1, preBlock1);
         preBlock2.inst.add(preBlock2.inst.size() - 1, new StoreInst("sw", newReg2, mid, new Imm(0)));
@@ -259,7 +266,7 @@ public class InstSelector implements IRVisitor {
             return;
         }
         Reg dest = getVirReg(it.retType);
-        curBlock.addInst(new MvInst(dest, regs.getPhyReg("a0")));
+        curBlock.addInst(new MvInst(dest, RegStore.regs.get("a0")));
         curBlock.addInst(new RetInst());
     }
     @Override

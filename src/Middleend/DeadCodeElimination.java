@@ -2,6 +2,7 @@ package Middleend;
 
 import MIR.Instruction.CallInst;
 import MIR.Instruction.Inst;
+import MIR.Instruction.StoreInst;
 import MIR.irEntity.Entity;
 import MIR.irEntity.function;
 import utils.Scope.GlobalScope;
@@ -40,7 +41,7 @@ public class DeadCodeElimination {
             Entity def = defs.removeFirst();
             if (entity2use.containsKey(def) && !entity2use.get(def).isEmpty()) continue;
             Inst defInst = entity2def.get(def);
-            if (defInst instanceof CallInst) continue;
+            if (defInst instanceof CallInst || (defInst instanceof StoreInst && ((StoreInst) defInst).pointer.irName.contains("array_ptr")) || defInst == null) continue;
             defInst.isDead = true;
             for (var use: defInst.getUses()) {
                 entity2use.get(use).remove(defInst);

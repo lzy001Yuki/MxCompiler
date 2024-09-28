@@ -1,5 +1,6 @@
 import java.io.*;
 
+import Assembly.AdvRegAllocator;
 import Assembly.InstSelector;
 import Assembly.RegAllocator;
 import MIR.IRBuilder;
@@ -50,9 +51,9 @@ public class Test {
             phiElimination.run();
             InstSelector selector = new InstSelector(globalScope);
             selector.visit(globalScope);
-            RegAllocator regAllocator = new RegAllocator(selector.asmProgram);
-            regAllocator.run();
-            System.out.println(regAllocator);
+            AdvRegAllocator advregAllocator = new AdvRegAllocator(selector.asmProgram);
+            advregAllocator.run();
+            System.out.println(advregAllocator);
         } catch (Error error) {
             System.out.println(error.toString());
             System.exit(1);

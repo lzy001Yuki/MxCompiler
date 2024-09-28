@@ -19,5 +19,9 @@ public abstract class ASMInst extends Operand {
         if (rs2 != null) uses.add(rs2);
         return uses;
     }
-    public Reg getDef() {return rd;}
+    public HashSet<Reg> getDef() {
+        HashSet<Reg> def = new HashSet<>();
+        if (rd != null) def.add(rd);
+        return def;
+    }
 }

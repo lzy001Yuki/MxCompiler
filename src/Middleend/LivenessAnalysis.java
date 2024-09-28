@@ -14,13 +14,10 @@ public class LivenessAnalysis {
 
         // propagate in the reverse order
         ASMBlock lastBlk = func.blocks.getLast();
-        HashSet<ASMBlock> visited = new HashSet<>();
         LinkedList<ASMBlock> queue = new LinkedList<>();
         queue.add(lastBlk);
         while (!queue.isEmpty()) {
             ASMBlock curBlk = queue.pollFirst();
-            if (visited.contains(curBlk)) continue;
-            visited.add(curBlk);
             HashSet<Reg> newOut = new HashSet<>();
 
             for (var nxt: curBlk.next) {
@@ -29,7 +26,7 @@ public class LivenessAnalysis {
 
             HashSet<Reg> newIn = new HashSet<>(newOut);
             newIn.removeAll(curBlk.defs);
-            newIn.addAll(curBlk.ins);
+            newIn.addAll(curBlk.uses);
 
             if (!newIn.equals(curBlk.ins) || !newOut.equals(curBlk.outs)) {
                 curBlk.ins.addAll(newIn);
@@ -42,11 +39,13 @@ public class LivenessAnalysis {
     }
 
     private void collect(ASMBlock blk) {
+        blk.ins.clear();
+        blk.outs.clear();
         for (var inst: blk.inst) {
             for (var use: inst.getUse()) {
                 if (!blk.defs.contains(use)) blk.uses.add(use);
             }
-            blk.defs.add(inst.getDef());
+            blk.defs.addAll(inst.getDef());
         }
     }
 }

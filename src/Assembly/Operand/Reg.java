@@ -12,7 +12,7 @@ public abstract class Reg extends Operand{
     public int useNum = 0;
     public int defNum = 0;
     public boolean isTemp = false;
-    public HashSet<MvInst> moveList;
+    public HashSet<MvInst> moveList = new HashSet<>();
     public void init() {
         adjList.clear();
         moveList.clear();

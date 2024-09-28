@@ -2,6 +2,7 @@ package Assembly;
 
 import Assembly.Inst.*;
 import Assembly.Operand.Imm;
+import Assembly.Operand.PhysicReg;
 import Assembly.Operand.Reg;
 import Assembly.Operand.VirtualReg;
 import Assembly.utils.CGBuilder;
@@ -15,7 +16,7 @@ import java.util.*;
 public class AdvRegAllocator {
     public ASMProgram program;
     public static int K = 27;
-    public RegStore regStore = new RegStore();
+    //public RegStore RegStore = new RegStore();
     public LivenessAnalysis analyzer = new LivenessAnalysis();
     public LinkedList<MvInst> worklistMoves = new LinkedList<>();
     public HashSet<Reg> initial = new HashSet<>();
@@ -26,7 +27,7 @@ public class AdvRegAllocator {
     public HashSet<MvInst> coalescedMoves = new HashSet<>();
     public Stack<Reg> selectStack = new Stack<>();
     public HashSet<Reg> coalescedNodes = new HashSet<>();
-    public HashSet<Reg> preColored = new HashSet<>(regStore.regs.values());
+    public HashSet<Reg> preColored = new HashSet<>(RegStore.regs.values());
     public HashSet<Reg> coloredNodes = new HashSet<>();
     public HashSet<Reg> spilledNodes = new HashSet<>();
     public HashSet<MvInst> constrainedMoves = new HashSet<>();
@@ -92,8 +93,8 @@ public class AdvRegAllocator {
         ASMBlock entryBlk = func.blocks.getFirst();
         int totalSpace = func.allocSpace + func.spilledSpace + 4 * func.virtualNum;
         int stackSpace = (totalSpace + 15) / 16 * 16;
-        ITypeInst in = new ITypeInst("addi", regStore.getPhyReg("sp"), regStore.getPhyReg("sp"), new Imm(-stackSpace));
-        ITypeInst out = new ITypeInst("addi", regStore.getPhyReg("sp"), regStore.getPhyReg("sp"), new Imm(stackSpace));
+        ITypeInst in = new ITypeInst("addi", RegStore.regs.get("sp"), RegStore.regs.get("sp"), new Imm(-stackSpace));
+        ITypeInst out = new ITypeInst("addi", RegStore.regs.get("sp"), RegStore.regs.get("sp"), new Imm(stackSpace));
         checkImm(entryBlk.inst, in, 0, in.imm);
         for (var retBlk: retBlock) {
             checkImm(retBlk.inst, out, retBlk.inst.size() - 1, out.imm);
@@ -114,13 +115,16 @@ public class AdvRegAllocator {
         worklistMoves.clear();
         activeMoves.clear();
         adjSet.clear();
+        initial.clear();
 
         for (var blk: func.blocks) {
             for (var inst: blk.inst) {
-                if (inst.getDef() instanceof VirtualReg) {
-                    inst.getDef().init();
-                    initial.add(inst.getDef());
-                    inst.getDef().defNum++;
+                for (var def: inst.getDef()) {
+                    if (def instanceof VirtualReg) {
+                        def.init();
+                        initial.add(def);
+                        def.defNum++;
+                    }
                 }
                 for (var use: inst.getUse()) {
                     if (use instanceof VirtualReg) use.init();
@@ -129,6 +133,7 @@ public class AdvRegAllocator {
                 }
             }
         }
+        initial.removeAll(preColored);
     }
 
     public void makeWorkList() {
@@ -310,7 +315,7 @@ public class AdvRegAllocator {
         double min = Double.MAX_VALUE;
         for (var r: spillWorklist) {
             double activeness = (double) r.useNum / (r.useNum + r.defNum);
-            if (activeness < min && !r.isTemp) {
+            if (activeness < min && !r.isTemp && !(r instanceof PhysicReg)) {
                 min = activeness;
                 m = r;
             }
@@ -326,13 +331,13 @@ public class AdvRegAllocator {
             var n = selectStack.pop();
             ArrayList<Reg> color = new ArrayList<>();
             for (int i = 0; i < 12; i++) {
-                color.add(regStore.getPhyReg("s" + i));
+                color.add(RegStore.regs.get("s" + i));
             }
             for (int i = 0; i < 8; i++) {
-                color.add(regStore.getPhyReg("a" + i));
+                color.add(RegStore.regs.get("a" + i));
             }
             for (int i = 0; i < 7; i++) {
-                color.add(regStore.getPhyReg("t" + i));
+                color.add(RegStore.regs.get("t" + i));
             }
             for (var w: n.adjList) {
                 if (coloredNodes.contains(GetAlias(w)) || preColored.contains(GetAlias(w))) {
@@ -365,23 +370,23 @@ public class AdvRegAllocator {
                 if (spilledNodes.contains(inst.rs1)) {
                     VirtualReg spillReg = new VirtualReg();
                     newTemps.add(spillReg);
-                    LoadInst newLoad = new LoadInst("lw", spillReg, regStore.getPhyReg("sp"), new Imm(func.allocSpace + spillToMem.get(inst.rs1)));
+                    LoadInst newLoad = new LoadInst("lw", spillReg, RegStore.regs.get("sp"), new Imm(func.allocSpace + spillToMem.get(inst.rs1)));
                     allocate(newLoad, newInst);
                     inst.rs1 = spillReg;
                 }
                 if (spilledNodes.contains(inst.rs2)) {
                     VirtualReg spillReg = new VirtualReg();
                     newTemps.add(spillReg);
-                    LoadInst newLoad = new LoadInst("lw", spillReg, regStore.getPhyReg("sp"), new Imm(func.allocSpace + spillToMem.get(inst.rs2)));
+                    LoadInst newLoad = new LoadInst("lw", spillReg, RegStore.regs.get("sp"), new Imm(func.allocSpace + spillToMem.get(inst.rs2)));
                     allocate(newLoad, newInst);
                     inst.rs2 = spillReg;
                 }
-                if (inst instanceof ITypeInst i) checkImm(newInst, inst, newInst.size() - 1, i.imm);
+                if (inst instanceof ITypeInst i) checkImm(newInst, inst, newInst.size(), i.imm);
                 else newInst.add(inst);
                 if (spilledNodes.contains(inst.rd)) {
                     VirtualReg spillReg = new VirtualReg();
                     newTemps.add(spillReg);
-                    StoreInst newStore = new StoreInst("sw", spillReg, regStore.getPhyReg("sp"), new Imm(func.allocSpace + spillToMem.get(inst.rd)));
+                    StoreInst newStore = new StoreInst("sw", spillReg, RegStore.regs.get("sp"), new Imm(func.allocSpace + spillToMem.get(inst.rd)));
                     allocate(newStore, newInst);
                     inst.rd = spillReg;
                 }
@@ -413,7 +418,7 @@ public class AdvRegAllocator {
                 VirtualReg address = new VirtualReg();
                 newTemps.add(address);
                 newInst.add(new LiInst(address, store.offset));
-                newInst.add(new BinaryInst("add", address, regStore.getPhyReg("sp"), address));
+                newInst.add(new BinaryInst("add", address, RegStore.regs.get("sp"), address));
                 newInst.add(new StoreInst("sw", inst.rs2, address, new Imm(0)));
             }
         }

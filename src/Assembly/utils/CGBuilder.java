@@ -27,15 +27,21 @@ public class CGBuilder {
                 var curInst = blk.inst.get(i);
                 if (curInst instanceof MvInst curMv) {
                     curLive.removeAll(curMv.getUse());
-                    curMv.getDef().moveList.add(curMv);
+                    for (var def: curMv.getDef()) {
+                        def.moveList.add(curMv);
+                    }
                     for (var use: curMv.getUse()) {
                         use.moveList.add(curMv);
                     }
                     worklistMoves.add(curMv);
                 }
-                for (var live: curLive) {
-                    if (curInst.getDef() != null) addEdge(live, curInst.getDef());
+                curLive.addAll(curInst.getDef());
+                for (var def: curInst.getDef()) {
+                    for (var live : curLive) {
+                        if (curInst.getDef() != null) addEdge(live, def);
+                    }
                 }
+                curLive.removeAll(curInst.getDef());
                 curLive.addAll(curInst.getUse());
             }
         }
