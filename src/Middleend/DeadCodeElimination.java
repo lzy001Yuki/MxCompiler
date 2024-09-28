@@ -5,6 +5,7 @@ import MIR.Instruction.Inst;
 import MIR.Instruction.StoreInst;
 import MIR.irEntity.Entity;
 import MIR.irEntity.function;
+import MIR.irEntity.globalVar;
 import utils.Scope.GlobalScope;
 
 import java.util.ArrayList;
@@ -41,7 +42,7 @@ public class DeadCodeElimination {
             Entity def = defs.removeFirst();
             if (entity2use.containsKey(def) && !entity2use.get(def).isEmpty()) continue;
             Inst defInst = entity2def.get(def);
-            if (defInst instanceof CallInst || (defInst instanceof StoreInst && ((StoreInst) defInst).pointer.irName.contains("array_ptr")) || defInst == null) continue;
+            if (noDel(defInst)) continue;
             defInst.isDead = true;
             for (var use: defInst.getUses()) {
                 entity2use.get(use).remove(defInst);
@@ -55,5 +56,14 @@ public class DeadCodeElimination {
                 if (iter.next().isDead) iter.remove();
             }
         }
+    }
+
+    public boolean noDel(Inst defInst) {
+        if (defInst instanceof CallInst || defInst == null) return true;
+        if (defInst instanceof StoreInst store) {
+            if (store.pointer.irName.contains("array_ptr") || store.pointer instanceof globalVar) return true;
+            else return false;
+        }
+        return false;
     }
 }

@@ -78,6 +78,7 @@ public class InstSelector implements IRVisitor {
             Reg paraCopy = new VirtualReg();
             ASMBlock entryBlock = curFunc.blocks.getFirst();
             entryBlock.addInst(new MvInst((Reg)it.paraList.get(i).operand, paraCopy));
+            //entryBlock.addInst(new StoreInst("sw", (Reg)it.paraList.get(i).operand, paraCopy, new Imm(0)));
             it.paraList.get(i).operand = paraCopy;
         }
         for (var iter: it.blocks) {

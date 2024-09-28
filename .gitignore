@@ -50,3 +50,4 @@ irOptimizer.txt
 phiElimination.txt
 .xmake
 input
+mem2reg.txt

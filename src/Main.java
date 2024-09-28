@@ -52,11 +52,13 @@ public class Main {
             output5.println(selector.asmProgram);
 //            RegAllocator regAllocator = new RegAllocator(selector.asmProgram);
 //            regAllocator.run();
+//            var output2 = new PrintStream(new FileOutputStream("tmp/test.s"));
+//            output2.println(regAllocator);
+//            System.out.println(regAllocator);
             AdvRegAllocator advregAllocator = new AdvRegAllocator(selector.asmProgram);
             advregAllocator.run();
             var output2 = new PrintStream(new FileOutputStream("tmp/test.s"));
             output2.println(advregAllocator);
-            //printBuiltin();
             System.out.println(advregAllocator);
         } catch (Error error) {
             System.out.println(error.toString());

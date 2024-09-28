@@ -10,6 +10,7 @@ import Assembly.utils.CGEdge;
 import Assembly.utils.RegStore;
 import MIR.Instruction.Inst;
 import Middleend.LivenessAnalysis;
+import utils.Pair;
 
 import java.util.*;
 
@@ -72,7 +73,7 @@ public class AdvRegAllocator {
         for (var blk: func.blocks) {
             LinkedList<ASMInst> newInst = new LinkedList<>();
             for (var inst: blk.inst) {
-                if (inst instanceof RetInst && !retBlock.contains(blk)) {
+                if (inst instanceof RetInst) {
                     retBlock.add(blk);
                 }
                 if (inst.rs1 instanceof VirtualReg) {
@@ -95,9 +96,13 @@ public class AdvRegAllocator {
         int stackSpace = (totalSpace + 15) / 16 * 16;
         ITypeInst in = new ITypeInst("addi", RegStore.regs.get("sp"), RegStore.regs.get("sp"), new Imm(-stackSpace));
         ITypeInst out = new ITypeInst("addi", RegStore.regs.get("sp"), RegStore.regs.get("sp"), new Imm(stackSpace));
-        checkImm(entryBlk.inst, in, 0, in.imm);
+        checkImm(entryBlk.inst, in, 0, in.imm, true);
         for (var retBlk: retBlock) {
-            checkImm(retBlk.inst, out, retBlk.inst.size() - 1, out.imm);
+            int pos = 0;
+            for (int i = 0; i < retBlk.inst.size(); i++) {
+                if (retBlk.inst.get(i) instanceof RetInst) pos = i;
+            }
+            checkImm(retBlk.inst, out, pos, out.imm, true);
         }
     }
 
@@ -314,7 +319,7 @@ public class AdvRegAllocator {
         Reg m = null;
         double min = Double.MAX_VALUE;
         for (var r: spillWorklist) {
-            double activeness = (double) r.useNum / (r.useNum + r.defNum);
+            double activeness = 1.0 - (double) r.useNum / (r.useNum + r.defNum);
             if (activeness < min && !r.isTemp && !(r instanceof PhysicReg)) {
                 min = activeness;
                 m = r;
@@ -381,7 +386,7 @@ public class AdvRegAllocator {
                     allocate(newLoad, newInst);
                     inst.rs2 = spillReg;
                 }
-                if (inst instanceof ITypeInst i) checkImm(newInst, inst, newInst.size(), i.imm);
+                if (inst instanceof ITypeInst i) checkImm(newInst, inst, newInst.size(), i.imm, false);
                 else newInst.add(inst);
                 if (spilledNodes.contains(inst.rd)) {
                     VirtualReg spillReg = new VirtualReg();
@@ -395,20 +400,25 @@ public class AdvRegAllocator {
         }
     }
 
-    public boolean checkImm(LinkedList<ASMInst> insts, ASMInst inst, int pos, Imm imm) {
+    public boolean checkImm(LinkedList<ASMInst> insts, ASMInst inst, int pos, Imm imm, boolean type) {
         if (imm.value < 2047 && imm.value > -2048) {
             insts.add(pos, inst);
             return true;
         } else {
-            insts.add(pos, new LiInst(inst.rd, imm));
-            insts.add(pos + 1, new BinaryInst("add", inst.rs1, inst.rd, inst.rd));
+            if (type) {
+                insts.add(pos, new LiInst(RegStore.regs.get("t0"), imm));
+                insts.add(pos + 1, new BinaryInst("add", inst.rd, inst.rd, RegStore.regs.get("t0")));
+            } else {
+                insts.add(pos, new LiInst(inst.rd, imm));
+                insts.add(pos + 1, new BinaryInst("add", inst.rs1, inst.rd, inst.rd));
+            }
             return false;
         }
     }
 
     public void allocate(ASMInst inst, LinkedList<ASMInst> newInst) {
         if (inst instanceof LoadInst load) {
-            if (!checkImm(newInst, inst, newInst.size() - 1, load.offset)) {
+            if (!checkImm(newInst, inst, newInst.size() - 1, load.offset, false)) {
                 newInst.add(new LoadInst("lw", inst.rd, inst.rd, new Imm(0)));
             }
         } else if (inst instanceof StoreInst store) {

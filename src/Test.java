@@ -51,6 +51,7 @@ public class Test {
             phiElimination.run();
             InstSelector selector = new InstSelector(globalScope);
             selector.visit(globalScope);
+//            RegAllocator advregAllocator = new RegAllocator(selector.asmProgram);
             AdvRegAllocator advregAllocator = new AdvRegAllocator(selector.asmProgram);
             advregAllocator.run();
             System.out.println(advregAllocator);
