@@ -121,6 +121,7 @@ public class AdvRegAllocator {
         activeMoves.clear();
         adjSet.clear();
         initial.clear();
+        newTemps.clear();
 
         for (var blk: func.blocks) {
             for (var inst: blk.inst) {
@@ -320,7 +321,7 @@ public class AdvRegAllocator {
         double min = Double.MAX_VALUE;
         for (var r: spillWorklist) {
             double activeness = 1.0 - (double) r.useNum / (r.useNum + r.defNum);
-            if (activeness < min && !r.isTemp && !(r instanceof PhysicReg)) {
+            if (activeness < min && !newTemps.contains(r) && !(r instanceof PhysicReg)) {
                 min = activeness;
                 m = r;
             }

@@ -49,6 +49,8 @@ public class LivenessAnalysis {
     private void collect(ASMBlock blk) {
         blk.ins.clear();
         blk.outs.clear();
+        blk.defs.clear();
+        blk.ins.clear();
         for (var inst: blk.inst) {
             for (var use: inst.getUse()) {
                 if (!blk.defs.contains(use)) blk.uses.add(use);

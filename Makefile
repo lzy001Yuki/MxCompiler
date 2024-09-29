@@ -4,7 +4,7 @@ build:
 
 .PHONY: run
 run:
-	cd bin && java -cp /ulib/antlr-4.7.2-complete.jar:. Main
+	cd bin && java -cp /ulib/antlr-4.7.2-complete.jar:. Test
 
 .PHONY: main
 main:
@@ -12,7 +12,7 @@ main:
 
 .PHONY: test
 test:
-	@cd bin && java -cp ../ulib/antlr-4.7.2-complete.jar:. Main
+	@cd bin && java -cp ../ulib/antlr-4.7.2-complete.jar:. Test
 
 .PHONY: visit
 visit:

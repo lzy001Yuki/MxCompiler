@@ -59,8 +59,8 @@ public class DomTree {
             if (it.iDom != null) it.iDom.dc.add(it);
             if (it.prev.size() >= 2) {
                 for (var pre: it.prev) {
-                    var copy = pre;
-                    while (copy != it.iDom) {
+                    block copy = pre;
+                    while (copy != it.iDom && copy != null) {
                         copy.df.add(it);
                         copy = copy.iDom;
                     }

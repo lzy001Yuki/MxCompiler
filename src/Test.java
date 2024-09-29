@@ -54,6 +54,7 @@ public class Test {
 //            RegAllocator advregAllocator = new RegAllocator(selector.asmProgram);
             AdvRegAllocator advregAllocator = new AdvRegAllocator(selector.asmProgram);
             advregAllocator.run();
+            printBuiltin();
             System.out.println(advregAllocator);
         } catch (Error error) {
             System.out.println(error.toString());

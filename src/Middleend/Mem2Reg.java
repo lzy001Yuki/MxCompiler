@@ -94,10 +94,12 @@ public class Mem2Reg {
                 if (!load.pointer.irName.contains("array_ptr") && !check(objectPtr, load.pointer) && !judgeThis(load.pointer.irName)) {
                     if (!(load.pointer instanceof globalVar)) {
                         Entity replaced = replaceName(load.pointer.irName);
-                        inst.replaceOperand(load.pointer, replaced);
-                        pushCurVar(load.result.irName, load.pointer);
-                        curVar.add(load.result.irName);
-                        iterator.remove();
+                        if (replaced != null) {
+                            inst.replaceOperand(load.pointer, replaced);
+                            pushCurVar(load.result.irName, load.pointer);
+                            curVar.add(load.result.irName);
+                            iterator.remove();
+                        }
                     }
                 } else {
                     Entity replaced = replaceName(load.pointer.irName);
@@ -181,6 +183,16 @@ public class Mem2Reg {
     public boolean check(ArrayList<Entity> obj, Entity tmp) {
         if (obj.isEmpty()) return false;
         return obj.contains(tmp);
+    }
+
+    public boolean isClassPtr(Entity tmp) {
+        IRType t = null;
+        if (tmp.type instanceof ptrType type) t = type.baseType;
+        else return false;
+        while (t instanceof ptrType type1) {
+            t = type1.baseType;
+        }
+        return (t instanceof classType);
     }
 
     public boolean judgeThis(String str) {

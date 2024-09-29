@@ -30,7 +30,7 @@ public class Optimizer {
 //            throw new RuntimeException(e);
 //        }
 //        output.println(irBuilder);
-        DeadCodeElimination deadCodeElimination = new DeadCodeElimination(globalScope);
-        deadCodeElimination.run();
+//        DeadCodeElimination deadCodeElimination = new DeadCodeElimination(globalScope);
+//        deadCodeElimination.run();
     }
 }
