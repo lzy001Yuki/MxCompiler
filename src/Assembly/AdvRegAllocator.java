@@ -336,14 +336,15 @@ public class AdvRegAllocator {
         while (!selectStack.isEmpty()) {
             var n = selectStack.pop();
             ArrayList<Reg> color = new ArrayList<>();
-            for (int i = 0; i < 12; i++) {
-                color.add(RegStore.regs.get("s" + i));
+            for (int i = 0; i < 7; i++) {
+                color.add(RegStore.regs.get("t" + i));
             }
+
             for (int i = 0; i < 8; i++) {
                 color.add(RegStore.regs.get("a" + i));
             }
-            for (int i = 0; i < 7; i++) {
-                color.add(RegStore.regs.get("t" + i));
+            for (int i = 0; i < 12; i++) {
+                color.add(RegStore.regs.get("s" + i));
             }
             for (var w: n.adjList) {
                 if (coloredNodes.contains(GetAlias(w)) || preColored.contains(GetAlias(w))) {

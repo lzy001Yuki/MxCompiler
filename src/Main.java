@@ -19,7 +19,7 @@ import utils.Scope.GlobalScope;
 public class Main {
     public static void main(String[] args) throws Exception {
         InputStream input = System.in;
-        //var input = new FileInputStream("Compiler-Design-Implementation/testcases/codegen/t3.mx");
+        //var input = new FileInputStream("Compiler-Design-Implementation/testcases/optim2/sha_1.mx");
         //var input = new FileInputStream("test.txt");
         try{
             GlobalScope globalScope = new GlobalScope();
