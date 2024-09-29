@@ -239,7 +239,7 @@ public class IRBuilder implements ASTVisitor {
         it.rhs.accept(this);
         if (it.rhs.entity != null) {
             StoreInst inst;
-            if (it.rhs instanceof arrayExprNode || it.rhs.entity.isConst() || it.rhs instanceof varExprNode || it.rhs instanceof funcExprNode) {
+            if (it.rhs instanceof arrayExprNode || it.rhs.entity.isConst() || it.rhs instanceof varExprNode || it.rhs instanceof funcExprNode || it.rhs instanceof ternaryExprNode) {
                 inst = new StoreInst(it.rhs.entity, it.lhs.entity);
             } else inst = new StoreInst(loadPtr(it.rhs.entity), it.lhs.entity);
             curBlock.addInst(inst);
@@ -996,7 +996,11 @@ public class IRBuilder implements ASTVisitor {
             }  else {
                 if (it.assignNode.entity != null) {
                     if (it.assignNode instanceof initArrayExprNode) loadPtr(it.assignNode.entity);
-                    else curBlock.addInst(new StoreInst(loadPtr(it.assignNode.entity), ptr));
+                    else if (it.assignNode instanceof ternaryExprNode) {
+                        curBlock.addInst(new StoreInst(it.assignNode.entity, ptr));
+                    } else {
+                        curBlock.addInst(new StoreInst(loadPtr(it.assignNode.entity), ptr));
+                    }
                 }
             }
         }
