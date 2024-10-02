@@ -4,6 +4,7 @@ import MIR.type.IRType;
 import MIR.type.ptrType;
 
 public class Ptr extends Entity{
+    public boolean isElement = false;
     public Ptr(IRType type, String name) {
         super(new ptrType(type), name);
     }

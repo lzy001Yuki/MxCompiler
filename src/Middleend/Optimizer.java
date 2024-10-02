@@ -28,9 +28,9 @@ public class Optimizer {
 //            output = new PrintStream(new FileOutputStream("mem2reg.txt"));
 //        } catch (FileNotFoundException e) {
 //            throw new RuntimeException(e);
-//        }
+//       }
 //        output.println(irBuilder);
-//        DeadCodeElimination deadCodeElimination = new DeadCodeElimination(globalScope);
-//        deadCodeElimination.run();
+        DeadCodeElimination deadCodeElimination = new DeadCodeElimination(globalScope);
+        deadCodeElimination.run();
     }
 }

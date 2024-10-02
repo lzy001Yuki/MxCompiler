@@ -4,8 +4,12 @@ import MIR.Instruction.CallInst;
 import MIR.Instruction.Inst;
 import MIR.Instruction.StoreInst;
 import MIR.irEntity.Entity;
+import MIR.irEntity.Ptr;
 import MIR.irEntity.function;
 import MIR.irEntity.globalVar;
+import MIR.type.IRType;
+import MIR.type.classType;
+import MIR.type.ptrType;
 import utils.Scope.GlobalScope;
 
 import java.util.ArrayList;
@@ -61,9 +65,24 @@ public class DeadCodeElimination {
     public boolean noDel(Inst defInst) {
         if (defInst instanceof CallInst || defInst == null) return true;
         if (defInst instanceof StoreInst store) {
-            if (store.pointer.irName.contains("array_ptr") || store.pointer instanceof globalVar) return true;
+            if (store.pointer instanceof globalVar || ((Ptr)store.pointer).isElement) return true;
             else return false;
         }
         return false;
+    }
+
+    public boolean isClassPtr(ptrType ptr) {
+        IRType curPtr = ptr.baseType;
+        while (curPtr instanceof ptrType) {
+            curPtr = ((ptrType) curPtr).baseType;
+        }
+        return (curPtr instanceof classType);
+    }
+
+    public boolean isArrayPtr(String name) {
+        if (name == null) return false;
+        if (name.contains("array_ptr")) return true;
+        else if (name.contains("malloc_ptr")) return true;
+        else return false;
     }
 }

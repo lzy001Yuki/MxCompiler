@@ -12,6 +12,7 @@ public class GetelementInst extends Inst{
     public ArrayList<Entity> index;
     public GetelementInst(localPtr res, Entity ptr) {
         result = res;
+        result.isElement = true;
         ptrVal = ptr;
         index = new ArrayList<>();
     }
