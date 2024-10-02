@@ -9,7 +9,7 @@ para : typename Identifier (Comma typename Identifier)* ;
 mainDef : Int Main '('')' block;
 
 constructor : Identifier '('')' block;
-classDef : Class Identifier '{' (varDef | constructor | funcDef)*  '}' ';';
+classDef : Class Identifier '{' (varDef | constructor | funcDef | mainDef)*  '}' ';';
 
 typename: (Int | Bool | String | Identifier)('['']')*;
 atom:Identifier | False | True | Integer | Str | Null | This | stringFormat;
@@ -20,7 +20,7 @@ expr
     | New (Int | Bool | String | Identifier) ('('')')?       #varExpr
     | expr ('['expr']')+    #indexExpr
     | expr '('(expr (Comma expr)*)?')'       #funcExpr
-    | expr op=Dot Identifier        #memberExpr
+    | expr op=Dot (Identifier | Main)        #memberExpr
     | <assoc=right> op=(Not | Tilde | Add | Sub) expr       #unaryExpr
     | expr op=(Incre | Decre)      #postfixExpr
     | <assoc=right> op=(Incre | Decre) expr     #prefixExpr

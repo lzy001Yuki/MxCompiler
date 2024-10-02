@@ -116,7 +116,18 @@ public class IRBuilder implements ASTVisitor {
             }
         }
         for (var def: it.definition) {
-            if (def instanceof mainDefNode) def.accept(this);
+            if (def instanceof mainDefNode) {
+                currentScope = new FuncScope(currentScope, new DataType("int"));
+                curFunc = new function("main", new intType(), false, null);
+                curBlock = new block("entry", curFunc);
+                curFunc.addBlock(curBlock);
+                function init_ = globalScope.getIrFunction("global_init");
+                CallInst inst = new CallInst(init_, "void_return");
+                curBlock.addInst(inst);
+                def.accept(this);
+                globalScope.addIrFunction("main", curFunc);
+                currentScope = currentScope.parentScope;
+            }
         }
     }
     @Override
@@ -902,7 +913,7 @@ public class IRBuilder implements ASTVisitor {
             curFunc = globalScope.getIrFunction(it.className + "." + entry.getKey());
             curBlock = new block("entry", curFunc);
             curFunc.addBlock(curBlock);
-            entry.getValue().accept(this);
+            ((funcDefNode)entry.getValue()).accept(this);
         }
         curFunc = init_;
         curBlock = init_.blocks.getLast();
@@ -961,19 +972,17 @@ public class IRBuilder implements ASTVisitor {
 
     @Override
     public void visit(mainDefNode it){
-        currentScope = new FuncScope(currentScope, new DataType("int"));
-        curFunc = new function("main", new intType(), false, null);
-        curBlock = new block("entry", curFunc);
-        curFunc.addBlock(curBlock);
-        function init_ = globalScope.getIrFunction("global_init");
-        CallInst inst = new CallInst(init_, "void_return");
-        curBlock.addInst(inst);
-        it.blockStat.accept(this);
-        if (it.blockStat.statList.isEmpty() || !(it.blockStat.statList.getLast() instanceof returnStatNode)) {
+        if (curFunc.isMember) {
+            currentScope = new FuncScope(currentScope, it.returnType);
+            localPtr ptr = thisPtr;
+            curBlock.addInst(new AllocaInst(ptr, new ptrType(), null));
+            curBlock.addInst(new StoreInst(curFunc.paraList.getFirst(), ptr));
+        }
+        it.funcBlock.accept(this);
+        if (it.funcBlock.statList.isEmpty() || !(it.funcBlock.statList.getLast() instanceof returnStatNode)) {
             curBlock.addInst(new RetInst(new constInt(0)));
         }
-        globalScope.addIrFunction("main", curFunc);
-        currentScope = currentScope.parentScope;
+        if (curFunc.isMember) currentScope = currentScope.parentScope;
     }
     @Override
     public void visit(paraListNode it){}

@@ -320,7 +320,8 @@ public class AdvRegAllocator {
         Reg m = null;
         double min = Double.MAX_VALUE;
         for (var r: spillWorklist) {
-            double activeness = 1.0 - (double) r.useNum / (r.useNum + r.defNum);
+            //double activeness = 1.0 - (double) r.useNum / (r.useNum + r.defNum);
+            double activeness = (r.useNum + r.defNum) * 1.0 / r.degree;
             if (activeness < min && !newTemps.contains(r) && !(r instanceof PhysicReg)) {
                 min = activeness;
                 m = r;

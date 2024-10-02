@@ -456,7 +456,7 @@ public class SemanticChecker implements ASTVisitor {
     @Override
     public void visit(mainDefNode it) {
         currentScope = new FuncScope(currentScope, new DataType("int"));
-        if (it.blockStat != null) it.blockStat.accept(this);
+        if (it.funcBlock != null) it.funcBlock.accept(this);
         currentScope = currentScope.parentScope;
     }
     @Override

@@ -51,7 +51,7 @@ public class ASTBuilder extends MxParserBaseVisitor<ASTNode> {
     public ASTNode visitMainDef(MxParser.MainDefContext ctx) {
         Position pos = new Position(ctx);
         mainDefNode mainDef = new mainDefNode(pos);
-        mainDef.blockStat = (blockStatNode) visitBlock(ctx.block());
+        mainDef.funcBlock = (blockStatNode) visitBlock(ctx.block());
         return mainDef;
     }
     @Override
@@ -162,6 +162,10 @@ public class ASTBuilder extends MxParserBaseVisitor<ASTNode> {
                 classDef.varMap.put(member.varName, new Pair<Integer, varDefAtomNode>(index, member));
                 index++;
             }
+        }
+        if (ctx.mainDef().size() > 1) throw new Error("SemanticError", "Multiple Definitions", pos);
+        for (var mains: ctx.mainDef()) {
+            classDef.funcMap.put("main", (mainDefNode) visitMainDef(mains));
         }
         return classDef;
     }
@@ -294,7 +298,8 @@ public class ASTBuilder extends MxParserBaseVisitor<ASTNode> {
         Position pos = new Position(ctx);
         memberExprNode memberExpr = new memberExprNode(pos);
         memberExpr.obj = (ExprNode) visit(ctx.expr());
-        memberExpr.member = ctx.Identifier().getText();
+        if (ctx.Identifier() != null) memberExpr.member = ctx.Identifier().getText();
+        else memberExpr.member = ctx.Main().getText();
         return memberExpr;
     }
     @Override
