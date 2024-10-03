@@ -18,7 +18,14 @@ public class CFGBuilder {
     public void buildCFG() {
         for (Map.Entry<String, function> entry: globalScope.irFunction.entrySet()) {
             function func = entry.getValue();
-            for (var blk: func.blocks) {
+            new CondPhiElimination(func).run();
+            var iter = func.blocks.iterator();
+            while (iter.hasNext()) {
+                var blk = iter.next();
+                if (blk.isDead) {
+                    iter.remove();
+                    continue;
+                }
                 Inst lastInst = blk.instructions.getLast();
                 if (lastInst instanceof BrInst) {
                     link(blk, func.blockMap.get(((BrInst) lastInst).iftrue));

@@ -15,14 +15,16 @@ public class Optimizer {
         irBuilder = builder;
     }
     public void run() {
-        CFGBuilder cfgBuilder = new CFGBuilder(globalScope);
-        cfgBuilder.buildCFG();
-        DomTree domTree = new DomTree(globalScope);
-        domTree.build();
-        Mem2Reg optimizer = new Mem2Reg(irBuilder);
-        optimizer.run(globalScope);
-        PhiElimination phiElimination = new PhiElimination(globalScope);
-        phiElimination.run();
+        boolean opt = true;
+        for (var func: globalScope.irFunction.entrySet()) {
+            if (func.getValue().blocks.size() > 5000) opt = false;
+        }
+            CFGBuilder cfgBuilder = new CFGBuilder(globalScope);
+            cfgBuilder.buildCFG();
+            DomTree domTree = new DomTree(globalScope);
+            domTree.build();
+            Mem2Reg optimizer = new Mem2Reg(irBuilder);
+            optimizer.run(globalScope);
 //        PrintStream output = null;
 //        try {
 //            output = new PrintStream(new FileOutputStream("mem2reg.txt"));
@@ -30,7 +32,11 @@ public class Optimizer {
 //            throw new RuntimeException(e);
 //       }
 //        output.println(irBuilder);
-        DeadCodeElimination deadCodeElimination = new DeadCodeElimination(globalScope);
-        deadCodeElimination.run();
+        PhiElimination phiElimination = new PhiElimination(globalScope);
+        phiElimination.run();
+        if (opt) {
+            DeadCodeElimination deadCodeElimination = new DeadCodeElimination(globalScope);
+            deadCodeElimination.run();
+        }
     }
 }
