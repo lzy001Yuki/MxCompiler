@@ -74,13 +74,13 @@ public class SCCP {
                     curBlock.instructions.add(new BrInst(null, retained.lab, null));
                     processPhi(removed, curBlock, func);
                 }
-                func.blockMap.clear();
-                for (var blk: func.blocks) {
-                    blk.phiInsts.removeIf(phiInst -> phiInst.isDead);
-                    blk.instructions.removeIf(it -> it.isDead);
-                    func.blockMap.put(blk.lab, blk);
-                }
             }
+        }
+        func.blockMap.clear();
+        for (var blk: func.blocks) {
+            blk.phiInsts.removeIf(phiInst -> phiInst.isDead);
+            blk.instructions.removeIf(it -> it.isDead);
+            func.blockMap.put(blk.lab, blk);
         }
     }
 
