@@ -1,11 +1,13 @@
 package MIR.irEntity;
 
 import MIR.IRVisitor;
+import MIR.Instruction.Inst;
 import MIR.type.IRType;
 import MIR.type.classType;
 import MIR.utils.block;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class function extends Entity{
     public boolean isMember;
@@ -13,6 +15,8 @@ public class function extends Entity{
     public ArrayList<block> blocks;
     public HashMap<String, block> blockMap;
     public String className;
+
+    public HashMap<Entity, HashSet<Inst>> entity2use = null;
     public function(String funcName, IRType ret, boolean flag, String clsName) {
         super(ret, funcName);
         this.isMember = flag;

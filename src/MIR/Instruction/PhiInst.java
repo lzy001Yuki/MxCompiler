@@ -45,4 +45,16 @@ public class PhiInst extends Inst{
             if (jump.get(i).getFirst().equals(old)) jump.set(i, new Pair<>(replace, jump.get(i).getSecond()));
         }
     }
+    @Override
+    public Entity getConst() {
+        if (jump.get(0).getFirst().equals(jump.get(1).getFirst())) return jump.getFirst().getFirst();
+        else return null;
+    }
+
+    @Override
+    public void entity2const(Entity old, Entity val) {
+        for (int i = 0; i < jump.size(); i++) {
+            if (jump.get(i).getFirst().equals(old)) jump.set(i, new Pair<>(val, jump.get(i).getSecond()));
+        }
+    }
 }

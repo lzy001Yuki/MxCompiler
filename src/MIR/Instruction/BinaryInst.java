@@ -3,6 +3,7 @@ package MIR.Instruction;
 import MIR.IRVisitor;
 import MIR.irEntity.*;
 import MIR.type.ptrType;
+import MIR.utils.block;
 
 import java.util.ArrayList;
 
@@ -55,5 +56,37 @@ public class BinaryInst extends Inst{
     public void replaceOperand(Entity old, Entity replace) {
         if (old.equals(op1)) op1 = replace;
         else op2 = replace;
+    }
+    @Override
+    public Entity getConst() {
+        if (op1 instanceof constInt int1 && op2 instanceof constInt int2) {
+            switch (op) {
+                case ("add") -> {return new constInt(int1.value + int2.value);}
+                case ("sub") -> {return new constInt(int1.value - int2.value);}
+                case ("mul") -> {return new constInt(int1.value * int2.value);}
+                case ("sdiv") -> {
+                    if (int2.value == 0) return null;
+                    else return new constInt(int1.value / int2.value);
+                }
+                case ("srem") -> {
+                    if (int2.value == 0) return null;
+                    else return new constInt(int1.value % int2.value);
+                }
+                case ("shl") -> {return new constInt(int1.value << int2.value);}
+                case ("ashr") -> {return new constInt(int1.value >> int2.value);}
+                case ("and") -> {return new constInt(int1.value & int2.value);}
+                case ("or") -> {return new constInt(int1.value | int2.value);}
+                case ("xor") -> {return new constInt(int1.value ^ int2.value);}
+            }
+        }
+        if (op1 instanceof constBool bool1 && op2 instanceof constBool bool2) {
+            if (op.equals("xor")) return new constBool(bool1.value ^ bool2.value);
+        }
+        return null;
+    }
+    @Override
+    public void entity2const(Entity old, Entity val) {
+        if (old.equals(op1)) op1 = val;
+        if (old.equals(op2)) op2 = val;
     }
 }

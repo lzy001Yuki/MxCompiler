@@ -36,12 +36,13 @@ public class block {
     }
     public void addInst(Inst in) {
         instructions.add(in);
+        in.belongedBlock = this;
     }
     @Override
     public String toString() {
         StringBuilder ans = new StringBuilder();
         ans.append(lab).append(":\n");
-        for(var phi: phiInsts) {
+        for (var phi: phiInsts) {
             ans.append("\t").append(phi).append("\n");
         }
         for (var inst: instructions) {

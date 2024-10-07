@@ -37,4 +37,14 @@ public class BrInst extends Inst{
     public void replaceOperand(Entity old, Entity replace) {
         if (old.equals(cond)) cond = replace;
     }
+    @Override
+    public Entity getConst() {
+        if (cond != null && cond.isConstValue()) return cond;
+        else return null;
+    }
+
+    @Override
+    public void entity2const(Entity old, Entity val) {
+        if (cond.equals(old)) cond = val;
+    }
 }

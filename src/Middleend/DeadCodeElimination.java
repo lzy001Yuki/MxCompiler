@@ -2,6 +2,7 @@ package Middleend;
 
 import MIR.Instruction.CallInst;
 import MIR.Instruction.Inst;
+import MIR.Instruction.MoveInst;
 import MIR.Instruction.StoreInst;
 import MIR.irEntity.Entity;
 import MIR.irEntity.Ptr;
@@ -14,6 +15,7 @@ import utils.Scope.GlobalScope;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 
 public class DeadCodeElimination {
@@ -27,7 +29,8 @@ public class DeadCodeElimination {
         }
     }
     public void workOnFunc(function func) {
-        HashMap<Entity, ArrayList<Inst>> entity2use = new HashMap<>();
+        //if (func.irName.equals("update")) return;
+        HashMap<Entity, HashSet<Inst>> entity2use = new HashMap<>();
         HashMap<Entity, Inst> entity2def = new HashMap<>();
         LinkedList<Entity> defs = new LinkedList<>();
         for (var blk: func.blocks) {
@@ -37,7 +40,7 @@ public class DeadCodeElimination {
                     defs.add(inst.getDef());
                 }
                 for (var use: inst.getUses()) {
-                    if (!entity2use.containsKey(use)) entity2use.put(use, new ArrayList<>());
+                    if (!entity2use.containsKey(use)) entity2use.put(use, new HashSet<>());
                     entity2use.get(use).add(inst);
                 }
             }
@@ -47,6 +50,7 @@ public class DeadCodeElimination {
             if (entity2use.containsKey(def) && !entity2use.get(def).isEmpty()) continue;
             Inst defInst = entity2def.get(def);
             if (noDel(defInst)) continue;
+            //if (func.irName.equals("update")) continue;
             defInst.isDead = true;
             for (var use: defInst.getUses()) {
                 entity2use.get(use).remove(defInst);
@@ -60,10 +64,11 @@ public class DeadCodeElimination {
                 if (iter.next().isDead) iter.remove();
             }
         }
+        func.entity2use = entity2use;
     }
 
     public boolean noDel(Inst defInst) {
-        if (defInst instanceof CallInst || defInst == null) return true;
+        if (defInst instanceof CallInst || defInst == null || defInst instanceof MoveInst) return true;
         if (defInst instanceof StoreInst store) {
             if (store.pointer instanceof globalVar || ((Ptr)store.pointer).isElement) return true;
             else return false;

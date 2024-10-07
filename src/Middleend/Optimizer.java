@@ -32,5 +32,14 @@ public class Optimizer {
         phiElimination.run();
         DeadCodeElimination deadCodeElimination = new DeadCodeElimination(globalScope);
         deadCodeElimination.run();
+//  PrintStream output = null;
+//try {
+//    output = new PrintStream(new FileOutputStream("mem2reg.txt"));
+//   } catch (FileNotFoundException e) {
+//       throw new RuntimeException(e);
+//    }
+//    output.println(irBuilder);
+       SCCP sccp = new SCCP(globalScope);
+       sccp.run();
     }
 }

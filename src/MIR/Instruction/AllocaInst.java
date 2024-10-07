@@ -3,6 +3,7 @@ package MIR.Instruction;
 import MIR.IRVisitor;
 import MIR.irEntity.*;
 import MIR.type.IRType;
+import MIR.utils.block;
 
 import java.util.ArrayList;
 
@@ -39,5 +40,12 @@ public class AllocaInst extends Inst{
     public void replaceOperand(Entity old, Entity replace) {
 
     }
+    @Override
+    public Entity getConst() {
+        return null;
+    }
+
+    @Override
+    public void entity2const(Entity old, Entity val) {}
 
 }

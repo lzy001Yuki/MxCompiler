@@ -50,4 +50,14 @@ public class GetelementInst extends Inst{
             if (index.get(i).equals(old)) index.set(i, replace);
         }
     }
+    @Override
+    public Entity getConst() {return null;}
+
+    @Override
+    public void entity2const(Entity old, Entity val) {
+        if (ptrVal.equals(old)) ptrVal = val;
+        for (int i = 0; i < index.size(); i++) {
+            if (index.get(i).equals(old)) index.set(i, val);
+        }
+    }
 }

@@ -34,4 +34,11 @@ public class MoveInst extends Inst{
     public void accept(IRVisitor visitor) {
         visitor.visit(this);
     }
+    @Override
+    public Entity getConst() {return null;}
+    @Override
+    public void entity2const(Entity old, Entity val) {
+        if (dest.equals(old)) dest = val;
+        if (src.equals(old)) src = val;
+    }
 }

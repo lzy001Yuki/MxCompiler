@@ -71,4 +71,24 @@ public class IcmpInst extends Inst{
         if (old.equals(op1)) op1 = replace;
         else op2 = replace;
     }
+    @Override
+    public Entity getConst() {
+        if (op1 instanceof constInt int1 && op2 instanceof constInt int2) {
+            switch (op) {
+                case ("eq") -> {return new constBool(int1.value == int2.value);}
+                case ("ne") -> {return new constBool(int1.value != int2.value);}
+                case ("sgt") -> {return new constBool(int1.value > int2.value);}
+                case ("slt") -> {return new constBool(int1.value < int2.value);}
+                case ("sge") -> {return new constBool(int1.value >= int2.value);}
+                case ("sle") -> {return new constBool(int1.value <= int2.value);}
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public void entity2const(Entity old, Entity val) {
+        if (op1.equals(old)) op1 = val;
+        if (op2.equals(old)) op2 = val;
+    }
 }

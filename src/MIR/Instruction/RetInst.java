@@ -37,4 +37,10 @@ public class RetInst extends Inst{
     public void replaceOperand(Entity old, Entity replace) {
         retType = replace;
     }
+    @Override
+    public Entity getConst() {return null;}
+    @Override
+    public void entity2const(Entity old, Entity val) {
+        if (retType.equals(old)) retType = val;
+    }
 }

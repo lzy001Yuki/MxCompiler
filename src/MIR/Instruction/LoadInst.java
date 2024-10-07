@@ -33,4 +33,9 @@ public class LoadInst extends Inst{
     public void replaceOperand(Entity old, Entity replace) {
         pointer = replace;
     }
+    @Override
+    public Entity getConst() {return null;}
+
+    @Override
+    public void entity2const(Entity old, Entity val) {}
 }

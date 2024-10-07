@@ -33,4 +33,10 @@ public class StoreInst extends Inst{
     public void replaceOperand(Entity old, Entity replace) {
         value = replace;
     }
+    @Override
+    public Entity getConst() {return null;}
+    @Override
+    public void entity2const(Entity old, Entity val) {
+        if (value.equals(old)) value = val;
+    }
 }
