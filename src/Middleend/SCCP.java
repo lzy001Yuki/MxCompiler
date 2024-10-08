@@ -68,7 +68,8 @@ public class SCCP {
                     var falseBlock = func.blockMap.get(br.iffalse);
                     var retained = ((constBool) conVal).value ? trueBlock : falseBlock;
                     var removed = ((constBool) conVal).value ? falseBlock : trueBlock;
-                    if (!(curBlock.instructions.getLast() instanceof BrInst)) throw new RuntimeException();
+                    if (!(curBlock.instructions.getLast() instanceof BrInst)) continue;
+                    if (trueBlock == null || falseBlock == null) continue;
                     curBlock.instructions.removeLast();
                     curBlock.next.remove(removed);
                     curBlock.instructions.add(new BrInst(null, retained.lab, null));

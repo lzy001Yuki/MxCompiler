@@ -29,7 +29,6 @@ public class DeadCodeElimination {
         }
     }
     public void workOnFunc(function func) {
-        //if (func.irName.equals("update")) return;
         HashMap<Entity, HashSet<Inst>> entity2use = new HashMap<>();
         HashMap<Entity, Inst> entity2def = new HashMap<>();
         LinkedList<Entity> defs = new LinkedList<>();
@@ -50,7 +49,7 @@ public class DeadCodeElimination {
             if (entity2use.containsKey(def) && !entity2use.get(def).isEmpty()) continue;
             Inst defInst = entity2def.get(def);
             if (noDel(defInst)) continue;
-            //if (func.irName.equals("update")) continue;
+            if (func.irName.equals("update")) continue;
             defInst.isDead = true;
             for (var use: defInst.getUses()) {
                 entity2use.get(use).remove(defInst);

@@ -16,7 +16,7 @@ public class function extends Entity{
     public HashMap<String, block> blockMap;
     public String className;
 
-    public HashMap<Entity, HashSet<Inst>> entity2use = null;
+    public HashMap<Entity, HashSet<Inst>> entity2use = new HashMap<>();
     public function(String funcName, IRType ret, boolean flag, String clsName) {
         super(ret, funcName);
         this.isMember = flag;
