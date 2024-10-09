@@ -39,7 +39,7 @@ public class Optimizer {
 //       throw new RuntimeException(e);
 //    }
 //    output.println(irBuilder);
-       SCCP sccp = new SCCP(globalScope);
-       sccp.run();
+       //SCCP sccp = new SCCP(globalScope);
+       //sccp.run();
     }
 }

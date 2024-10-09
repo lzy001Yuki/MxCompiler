@@ -13,6 +13,7 @@ import MIR.Instruction.*;
 import MIR.irEntity.function;
 import MIR.utils.block;
 import com.sun.jdi.VoidType;
+import utils.Pair;
 import utils.Scope.GlobalScope;
 import utils.Scope.Scope;
 
@@ -31,6 +32,7 @@ public class InstSelector implements IRVisitor {
     public ASMProgram asmProgram;
     public HashMap<String, ASMBlock> blockMap;
     public int cnt = 0;
+    public HashMap<BeqzInst, Pair<ASMBlock, ASMBlock>> checkBeq = new HashMap<>();
 
     public InstSelector(GlobalScope global) {
         globalScope = global;
@@ -68,7 +70,7 @@ public class InstSelector implements IRVisitor {
     public void visit(function it){
         VirtualReg.cnt = 0;
         for (var iter: it.blocks) {
-            ASMBlock b = new ASMBlock(getLabel() + iter.lab);
+            ASMBlock b = new ASMBlock(getLabel() + iter.lab, curFunc);
             blockMap.put(getLabel() + iter.lab, b);
             curFunc.addBlock(b);
         }
@@ -83,7 +85,34 @@ public class InstSelector implements IRVisitor {
         }
         for (var iter: it.blocks) {
             curBlock = blockMap.get(getLabel() + iter.lab);
+            curBlock.PC = curFunc.curPC;
             iter.accept(this);
+        }
+
+        for (Map.Entry<BeqzInst, Pair<ASMBlock, ASMBlock>> iter: checkBeq.entrySet()) {
+            ASMBlock firBlk = iter.getValue().getFirst();
+            ASMBlock secBlk = iter.getValue().getSecond();
+            BeqzInst beqz = iter.getKey();
+            if (secBlk.PC - beqz.PC > 4096) {
+                Reg tmp = new VirtualReg();
+                int index = firBlk.inst.size() - 1;
+                boolean flag = false;
+                for (; index >= 0; index--) {
+                    if (firBlk.inst.get(index).equals(beqz)) {
+                        flag = true;
+                        break;
+                    }
+                }
+                if (flag) {
+                    firBlk.inst.remove(index);
+                    Label label = new Label(getLabel() + "skip" + cnt);
+                    cnt++;
+                    firBlk.inst.add(index, new BeqzInst(beqz.rs1, label.symbol));
+                    firBlk.inst.add(index, new LaInst(tmp, beqz.dest));
+                    firBlk.addInst(label);
+                    firBlk.addInst(new JrInst(tmp));
+                }
+            }
         }
 
         // callee process
@@ -124,6 +153,25 @@ public class InstSelector implements IRVisitor {
     }
     @Override
     public void visit(BrInst it){
+
+        curBlock.addInst(new Comment(it.toString()));
+        //Reg tmp = null;
+        //Label label = null;
+        //if (!curBlock.label.contains("short_") || it.iftrue.contains("short_next")) {
+            if (it.iffalse != null) {
+                Reg tmp = getVirReg(it.cond);
+                curBlock.addInst(new ITypeInst("xori", tmp, tmp, new Imm(1)));
+                link(curBlock.label, getLabel() + it.iffalse);
+                BeqzInst beqz = new BeqzInst(tmp, getLabel() + it.iftrue);
+                curBlock.addInst(beqz);
+                checkBeq.put(beqz, new Pair<>(curBlock, blockMap.get(beqz.dest)));
+                link(curBlock.label, getLabel() + it.iftrue);
+                curBlock.addInst(new JumpInst(getLabel() + it.iffalse));
+            } else {
+                curBlock.addInst(new JumpInst(getLabel() + it.iftrue));
+                link(curBlock.label, getLabel() + it.iftrue);
+            }
+/*
         curBlock.addInst(new Comment(it.toString()));
         Reg tmp = null;
         Label label = null;
@@ -140,7 +188,7 @@ public class InstSelector implements IRVisitor {
             curBlock.addInst(label);
             curBlock.addInst(new JrInst(tmp));
             link(curBlock.label, getLabel() + it.iffalse);
-        }
+        }*/
     }
     @Override
     public void visit(MIR.Instruction.CallInst it){
@@ -231,7 +279,7 @@ public class InstSelector implements IRVisitor {
     // currently no critical edge
     @Override
     public void visit(PhiInst it){
-
+/*
         // phi elimination instead
         curBlock.addInst(new Comment(it.toString()));
         it.result.operand = new VirtualReg();
@@ -257,7 +305,7 @@ public class InstSelector implements IRVisitor {
         curFunc.allocSpace += 4;
         Reg mid1 = new VirtualReg();
         curBlock.addInst(new LoadInst("lw", mid1, mid, new Imm(0)));
-        curBlock.addInst(new MvInst(mid1, (Reg) it.result.operand));
+        curBlock.addInst(new MvInst(mid1, (Reg) it.result.operand));*/
     }
     @Override
     public void visit(MIR.Instruction.RetInst it){

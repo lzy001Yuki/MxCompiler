@@ -12,11 +12,14 @@ public class ASMFunction extends Operand {
     public int virtualNum = 0;
     public int allocSpace = 0;
     public int spilledSpace = 0;
+    public int curPC = 4;
     public ASMFunction(String name) {
         this.name = name;
         blocks = new ArrayList<>();
     }
-    public void addBlock(ASMBlock it) {blocks.add(it);}
+    public void addBlock(ASMBlock it) {
+        blocks.add(it);
+    }
     public void addLast(ASMInst it) {
         blocks.getLast().inst.add(blocks.getLast().inst.size() - 1, it);
     }

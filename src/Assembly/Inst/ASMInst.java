@@ -8,6 +8,7 @@ import java.util.HashSet;
 
 public abstract class ASMInst extends Operand {
     public Reg rs1, rs2, rd;
+    public int PC = 0;
     public ASMInst(Reg rs1, Reg rs2, Reg rd) {
         this.rs1 = rs1;
         this.rs2 = rs2;
