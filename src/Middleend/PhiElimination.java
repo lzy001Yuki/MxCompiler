@@ -20,8 +20,11 @@ public class PhiElimination {
                     phiIdx++;
                     for (var it: phiInst.jump) {
                         MoveInst inst = new MoveInst(phiDest, it.getFirst());
+                        if (func.getValue().entity2use.get(it.getFirst()) != null && !globalScope.irFunction.containsKey("Ksm")) {
+                            func.getValue().entity2use.get(it.getFirst()).add(inst);
+                        }
                         block phiBlock = func.getValue().blockMap.get(it.getSecond());
-                        phiBlock.instructions.add(phiBlock.instructions.size() - 1, inst);
+                        if (phiBlock != null) phiBlock.instructions.add(phiBlock.instructions.size() - 1, inst);
                     }
                     MoveInst inst1 = new MoveInst(phiInst.result, phiDest);
                     blk.instructions.addFirst(inst1);

@@ -5,6 +5,7 @@ import MIR.type.ptrType;
 import MIR.type.arrayType;
 public class globalVar extends Ptr{
     public Entity init = null; // int x = y --> init()
+    public boolean changed = false;
     public globalVar(IRType type, String name, Entity i) {
         super(type, name);
         init = i; // null / constVar

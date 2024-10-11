@@ -92,7 +92,7 @@ public class AdvRegAllocator {
             blk.inst = newInst;
         }
         ASMBlock entryBlk = func.blocks.getFirst();
-        int totalSpace = func.allocSpace + func.spilledSpace + 4 * func.virtualNum;
+        int totalSpace = func.allocSpace + func.spilledSpace;
         int stackSpace = (totalSpace + 15) / 16 * 16;
         ITypeInst in = new ITypeInst("addi", RegStore.regs.get("sp"), RegStore.regs.get("sp"), new Imm(-stackSpace));
         ITypeInst out = new ITypeInst("addi", RegStore.regs.get("sp"), RegStore.regs.get("sp"), new Imm(stackSpace));
@@ -322,6 +322,7 @@ public class AdvRegAllocator {
         for (var r: spillWorklist) {
             //double activeness = 1.0 - (double) r.useNum / (r.useNum + r.defNum);
             double activeness = (r.useNum + r.defNum) * 1.0 / r.degree;
+            //double activeness = r.useNum + r.defNum;
             if (activeness < min && !newTemps.contains(r) && !(r instanceof PhysicReg)) {
                 min = activeness;
                 m = r;

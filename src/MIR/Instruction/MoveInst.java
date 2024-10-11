@@ -28,7 +28,8 @@ public class MoveInst extends Inst{
     }
     @Override
     public void replaceOperand(Entity old, Entity replace) {
-
+        if (dest.equals(old)) dest = replace;
+        else src = replace;
     }
     @Override
     public void accept(IRVisitor visitor) {

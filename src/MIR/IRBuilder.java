@@ -55,7 +55,7 @@ public class IRBuilder implements ASTVisitor {
                     entry.getValue().getSecond().type.arrayDim = dim;
                     if (dim != 0) entry.getValue().getSecond().type.isArray = true;
                 }
-                globalScope.addBasicInst(new BasicInst(newCls.print()));
+                globalScope.addBasicInst(newCls, new BasicInst(newCls.print()));
                 //def.accept(this);
                 for (Map.Entry<String, funcDefNode> entry: ((classDefNode) def).funcMap.entrySet()) {
                     int dim = entry.getValue().returnType.arrayDim;
@@ -86,7 +86,7 @@ public class IRBuilder implements ASTVisitor {
                             }
                         }
                     }
-                    globalScope.addBasicInst(new BasicInst(gVar.print()));
+                    globalScope.addBasicInst(gVar, new BasicInst(gVar.print()));
                 }
             } else if (def instanceof funcDefNode) {
                 //curBlock = new block("entry", curFunc);
@@ -104,6 +104,7 @@ public class IRBuilder implements ASTVisitor {
         }
         curBlock = init_.blocks.getLast();
         curBlock.addInst(new RetInst(new voidType(), null));
+        init_.retBlks.add(curBlock);
         globalScope.addIrFunction("global_init", init_);
         curBlock = null;
         for (var funcDef: it.definition) {
@@ -267,7 +268,7 @@ public class IRBuilder implements ASTVisitor {
         } else if (it.strExpr != null) {
             it.entity = new constString(rename("const.str"), getStr(it.strExpr.value));
             globalScope.addString((constString) it.entity);
-            globalScope.addBasicInst(new BasicInst(it.entity.toString()));
+            globalScope.addBasicInst(it.entity, new BasicInst(it.entity.toString()));
         } else if (it.id != null) {
             it.entity = currentScope.getPtrGlobally(it.id);
             if (it.entity instanceof memberPtr) {
@@ -371,14 +372,14 @@ public class IRBuilder implements ASTVisitor {
             it.value = it.value.replace("$$", "$");
             it.entity = new constString(rename("const.str"), it.value);
             globalScope.addString((constString) it.entity);
-            globalScope.addBasicInst(new BasicInst(it.entity.toString()));
+            globalScope.addBasicInst(it.entity, new BasicInst(it.entity.toString()));
         } else {
             constString headStr = null;
             localVar localStr = null;
             if (it.head.length() > 3) {
                 headStr = new constString(rename("const.str"), getStr(it.head.substring(1)).replace("$$", "$"));
                 globalScope.addString(headStr);
-                globalScope.addBasicInst(new BasicInst(headStr.toString()));
+                globalScope.addBasicInst(it.entity, new BasicInst(headStr.toString()));
                 localPtr ptr = new localPtr(new ptrType(headStr.type), generator.getName());
                 curBlock.addInst(new AllocaInst(ptr, ptr.type, null));
                 curBlock.addInst(new StoreInst(headStr, ptr));
@@ -391,7 +392,7 @@ public class IRBuilder implements ASTVisitor {
             for (int i = 0; i < it.middle.size(); i++) {
                 constString midStr = new constString(rename("const.str"), getStr(it.middle.get(i)).replace("$$", "$"));
                 globalScope.addString(midStr);
-                globalScope.addBasicInst(new BasicInst(midStr.toString()));
+                globalScope.addBasicInst(it.entity, new BasicInst(midStr.toString()));
                 localStr = addConstString(midStr, localStr);
                 it.expr.get(i + 1).accept(this);
                 localStr = formatProcess(it.expr.get(i + 1), localStr);
@@ -400,7 +401,7 @@ public class IRBuilder implements ASTVisitor {
                 constString tailStr = new constString(rename("const.str"), getStr(it.tail).replace("$$", "$"));
                 localStr = addConstString(tailStr, localStr);
                 globalScope.addString(tailStr);
-                globalScope.addBasicInst(new BasicInst(tailStr.toString()));
+                globalScope.addBasicInst(tailStr, new BasicInst(tailStr.toString()));
             }
             it.entity = new localPtr(new ptrType(new stringType()), generator.getName());
             curBlock.addInst(new AllocaInst((Ptr)it.entity, it.entity.type, null));
@@ -456,14 +457,14 @@ public class IRBuilder implements ASTVisitor {
             curFunc.addBlock(curBlock);
             constString trueConst = new constString(rename("const.str"), "true");
             globalScope.addString(trueConst);
-            globalScope.addBasicInst(new BasicInst(trueConst.toString()));
+            globalScope.addBasicInst(trueConst, new BasicInst(trueConst.toString()));
             localVar trueVar = addConstString(trueConst, ptr);
             curBlock.addInst(new BrInst(null, endStr, null));
             curBlock = new block(falseStr, curFunc);
             curFunc.addBlock(curBlock);
             constString falseConst = new constString(rename("const.str"), "false");
             globalScope.addString(falseConst);
-            globalScope.addBasicInst(new BasicInst(falseConst.toString()));
+            globalScope.addBasicInst(falseConst, new BasicInst(falseConst.toString()));
             localVar falseVar = addConstString(falseConst, ptr);
             curBlock.addInst(new BrInst(null, endStr, null));
             curBlock = new block(endStr, curFunc);
@@ -850,13 +851,16 @@ public class IRBuilder implements ASTVisitor {
                 StoreInst inst = new StoreInst(mid, midd);
                 curBlock.addInst(inst);
                 curBlock.addInst(new RetInst(loadPtr(midd)));
+                curFunc.retBlks.add(curBlock);
                 return;
             }
             if (it.exprNode instanceof funcExprNode) curBlock.addInst(new RetInst(it.exprNode.entity));
             else curBlock.addInst(new RetInst(loadPtr(it.exprNode.entity)));
+            curFunc.retBlks.add(curBlock);
             curBlock = new block();
         } else {
             curBlock.addInst(new RetInst(new voidType(), null));
+            curFunc.retBlks.add(curBlock);
             curBlock = new block();
         }
     }
@@ -931,6 +935,7 @@ public class IRBuilder implements ASTVisitor {
         curBlock.addInst(new StoreInst(curFunc.paraList.getFirst(), ptr));
         it.blockStat.accept(this);
         curBlock.addInst(new RetInst(new voidType(), null));
+        curFunc.retBlks.add(curBlock);
         currentScope = currentScope.parentScope;
     }
     @Override
@@ -955,11 +960,13 @@ public class IRBuilder implements ASTVisitor {
         it.funcBlock.accept(this);
         if (it.returnType.typeName.equals("void"))  {
             curBlock.addInst(new RetInst(new voidType(), null));
+            curFunc.retBlks.add(curBlock);
             currentScope = currentScope.parentScope;
             return;
         }
         if (curFunc.blocks.getLast().instructions.isEmpty() || !(curFunc.blocks.getLast().instructions.getLast() instanceof RetInst)) {
             curBlock.addInst(new RetInst(transData(it.returnType)));
+            curFunc.retBlks.add(curBlock);
         }
         currentScope = currentScope.parentScope;
     }
@@ -981,6 +988,7 @@ public class IRBuilder implements ASTVisitor {
         it.funcBlock.accept(this);
         if (it.funcBlock.statList.isEmpty() || !(it.funcBlock.statList.getLast() instanceof returnStatNode)) {
             curBlock.addInst(new RetInst(new constInt(0)));
+            curFunc.retBlks.add(curBlock);
         }
         if (curFunc.isMember) currentScope = currentScope.parentScope;
     }
@@ -1040,8 +1048,8 @@ public class IRBuilder implements ASTVisitor {
             ans.append(builtIn.declare());
         }
         ans.append("\n");
-        for (var inst: globalScope.globalInst) {
-            ans.append(inst).append("\n");
+        for (var inst: globalScope.globalInst.entrySet()) {
+            ans.append(inst.getValue()).append("\n");
         }
         ans.append("\n");
         for (function func: globalScope.irFunction.values()) {
@@ -1049,7 +1057,7 @@ public class IRBuilder implements ASTVisitor {
         }
         return ans.toString();
     }
-    private Entity loadPtr(Entity it) {
+    public Entity loadPtr(Entity it) {
         if (it.type instanceof ptrType) {
             Entity local;
             if (((ptrType) it.type).baseType == null) return it;

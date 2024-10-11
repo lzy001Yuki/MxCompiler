@@ -6,10 +6,10 @@ import MIR.irEntity.*;
 import java.util.ArrayList;
 
 public class IcmpInst extends Inst{
-    public localVar result;
+    public Entity result;
     public String op;
     public Entity op1, op2;
-    public IcmpInst(localVar v, String str, Entity op1, Entity op2) {
+    public IcmpInst(Entity v, String str, Entity op1, Entity op2) {
         this.op1 = op1;
         this.op2 = op2;
         result = v;
@@ -69,7 +69,8 @@ public class IcmpInst extends Inst{
     @Override
     public void replaceOperand(Entity old, Entity replace) {
         if (old.equals(op1)) op1 = replace;
-        else op2 = replace;
+        else if (old.equals(op2)) op2 = replace;
+
     }
     @Override
     public Entity getConst() {
@@ -89,6 +90,7 @@ public class IcmpInst extends Inst{
     @Override
     public void entity2const(Entity old, Entity val) {
         if (op1.equals(old)) op1 = val;
-        if (op2.equals(old)) op2 = val;
+        else if (op2.equals(old)) op2 = val;
+        else result = val;
     }
 }

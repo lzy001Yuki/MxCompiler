@@ -15,6 +15,10 @@ public class function extends Entity{
     public ArrayList<block> blocks;
     public HashMap<String, block> blockMap;
     public String className;
+    public HashMap<globalVar, ArrayList<Inst>> usedGlobal = new HashMap<>(); // only const value allowed
+    public HashSet<globalVar> defGlobal = new HashSet<>();
+    public HashSet<globalVar> affineGlobal = new HashSet<>();
+    public ArrayList<block> retBlks = new ArrayList<>();
 
     public HashMap<Entity, HashSet<Inst>> entity2use = new HashMap<>();
     public function(String funcName, IRType ret, boolean flag, String clsName) {

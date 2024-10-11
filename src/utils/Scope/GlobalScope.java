@@ -14,6 +14,8 @@ import utils.Error;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 
 public class GlobalScope extends Scope {
     public HashMap<String, funcDefNode> funcMember = null;
@@ -24,7 +26,7 @@ public class GlobalScope extends Scope {
     public HashMap<String, Entity> irMember = null;
     public HashMap<String, function> irFunction = null;
     public HashMap<String, function> builtInFunc = null;
-    public ArrayList<Inst> globalInst;
+    public HashMap<Entity, Inst> globalInst;
     public ArrayList<constString> globalString;
     public GlobalScope() {
         super(null);
@@ -34,7 +36,7 @@ public class GlobalScope extends Scope {
         irFunction = new HashMap<>();
         irMember = new HashMap<>();
         builtInFunc = new HashMap<>();
-        globalInst = new ArrayList<>();
+        globalInst = new HashMap<>();
         globalString = new ArrayList<>();
         className = null;
         isLoopScope = false;
@@ -161,7 +163,7 @@ public class GlobalScope extends Scope {
         return classMember.get(name);
     }
     public void addIrClass(globalClass cls) {irClass.put(cls.irName, cls);}
-    public void addBasicInst(BasicInst in) {globalInst.add(in);}
+    public void addBasicInst(Entity base, BasicInst in) {globalInst.put(base, in);}
     public void addIrFunction(String name, function func) {irFunction.put(name, func);}
     public function getIrFunction(String name) {
         if (irFunction.containsKey(name)) return irFunction.get(name);

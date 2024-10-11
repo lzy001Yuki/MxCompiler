@@ -37,4 +37,6 @@ public abstract class IRType {
     public String toString(){
         return typeName;
     }
+
+    public boolean constType() {return this instanceof intType || this instanceof boolType;}
 }

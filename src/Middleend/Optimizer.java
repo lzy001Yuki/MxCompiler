@@ -21,17 +21,16 @@ public class Optimizer {
         domTree.build();
         Mem2Reg optimizer = new Mem2Reg(irBuilder);
         optimizer.run(globalScope);
-//        PrintStream output = null;
-//        try {
-//            output = new PrintStream(new FileOutputStream("mem2reg.txt"));
-//        } catch (FileNotFoundException e) {
-//            throw new RuntimeException(e);
-//       }
-//        output.println(irBuilder);
-        PhiElimination phiElimination = new PhiElimination(globalScope);
-        phiElimination.run();
+
         DeadCodeElimination deadCodeElimination = new DeadCodeElimination(globalScope);
         deadCodeElimination.run();
+
+        PrintStream output = null;
+
+        PhiElimination phiElimination = new PhiElimination(globalScope);
+        phiElimination.run();
+
+
 //  PrintStream output = null;
 //try {
 //    output = new PrintStream(new FileOutputStream("mem2reg.txt"));
@@ -39,7 +38,16 @@ public class Optimizer {
 //       throw new RuntimeException(e);
 //    }
 //    output.println(irBuilder);
-       //SCCP sccp = new SCCP(globalScope);
-       //sccp.run();
+
+        try {
+            output = new PrintStream(new FileOutputStream("mem2reg.txt"));
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        output.println(irBuilder);
+        SCCP sccp = new SCCP(globalScope);
+        sccp.run();
+       Global2Local g2l = new Global2Local(irBuilder);
+       g2l.run();
     }
 }

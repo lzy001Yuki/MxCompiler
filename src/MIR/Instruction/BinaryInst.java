@@ -8,10 +8,10 @@ import MIR.utils.block;
 import java.util.ArrayList;
 
 public class BinaryInst extends Inst{
-    public localVar result;
+    public Entity result;
     public String op;
     public Entity op1, op2;
-    public BinaryInst(localVar v, String str, Entity op1, Entity op2) {
+    public BinaryInst(Entity v, String str, Entity op1, Entity op2) {
         if (op1.type instanceof ptrType) throw new RuntimeException("error in binaryinst type");
         result = v;
         this.op1 = op1;
@@ -55,7 +55,8 @@ public class BinaryInst extends Inst{
     @Override
     public void replaceOperand(Entity old, Entity replace) {
         if (old.equals(op1)) op1 = replace;
-        else op2 = replace;
+        else if (old.equals(op2)) op2 = replace;
+        else result = replace;
     }
     @Override
     public Entity getConst() {
@@ -87,6 +88,6 @@ public class BinaryInst extends Inst{
     @Override
     public void entity2const(Entity old, Entity val) {
         if (old.equals(op1)) op1 = val;
-        if (old.equals(op2)) op2 = val;
+        else if (old.equals(op2)) op2 = val;
     }
 }

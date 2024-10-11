@@ -63,6 +63,7 @@ public class CallInst extends Inst{
         for (int i = 0; i < para.size(); i++) {
             if (para.get(i).equals(old)) para.set(i, replace);
         }
+        if (old.equals(ret)) ret = replace;
     }
     @Override
     public Entity getConst() {return null;}

@@ -31,7 +31,8 @@ public class StoreInst extends Inst{
     }
     @Override
     public void replaceOperand(Entity old, Entity replace) {
-        value = replace;
+        if (old.equals(value)) value = replace;
+        else pointer = replace;
     }
     @Override
     public Entity getConst() {return null;}

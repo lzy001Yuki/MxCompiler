@@ -134,10 +134,11 @@ public class InstSelector implements IRVisitor {
     @Override
     public void visit(MIR.Instruction.BinaryInst it){
         curBlock.addInst(new Comment(it.toString()));
-        it.result.operand = new VirtualReg();
+        //it.result.operand = new VirtualReg();
         Reg lhs, rhs;
         lhs = getVirReg(it.op1);
         rhs = getVirReg(it.op2);
+        it.result.operand = new VirtualReg();
         switch (it.op) {
             case "add" -> curBlock.addInst(new BinaryInst("add", (Reg) it.result.operand, lhs, rhs));
             case "sub" -> curBlock.addInst(new BinaryInst("sub", (Reg) it.result.operand, lhs, rhs));
@@ -160,13 +161,13 @@ public class InstSelector implements IRVisitor {
         //if (!curBlock.label.contains("short_") || it.iftrue.contains("short_next")) {
             if (it.iffalse != null) {
                 Reg tmp = getVirReg(it.cond);
-                curBlock.addInst(new ITypeInst("xori", tmp, tmp, new Imm(1)));
+                //curBlock.addInst(new ITypeInst("xori", tmp, tmp, new Imm(1)));
                 link(curBlock.label, getLabel() + it.iffalse);
-                BeqzInst beqz = new BeqzInst(tmp, getLabel() + it.iftrue);
+                BeqzInst beqz = new BeqzInst(tmp, getLabel() + it.iffalse);
                 curBlock.addInst(beqz);
                 checkBeq.put(beqz, new Pair<>(curBlock, blockMap.get(beqz.dest)));
                 link(curBlock.label, getLabel() + it.iftrue);
-                curBlock.addInst(new JumpInst(getLabel() + it.iffalse));
+                curBlock.addInst(new JumpInst(getLabel() + it.iftrue));
             } else {
                 curBlock.addInst(new JumpInst(getLabel() + it.iftrue));
                 link(curBlock.label, getLabel() + it.iftrue);
@@ -268,7 +269,7 @@ public class InstSelector implements IRVisitor {
     @Override
     public void visit(MIR.Instruction.LoadInst it){
         curBlock.addInst(new Comment(it.toString()));
-        it.result.operand = new VirtualReg();
+        if (it.result.operand == null) it.result.operand = new VirtualReg();
         Reg pointerReg = (Reg) it.pointer.operand;
         if (it.pointer instanceof globalVar || it.pointer instanceof constString) {
             pointerReg = new VirtualReg();
