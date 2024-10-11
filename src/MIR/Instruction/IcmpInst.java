@@ -69,7 +69,7 @@ public class IcmpInst extends Inst{
     @Override
     public void replaceOperand(Entity old, Entity replace) {
         if (old.equals(op1)) op1 = replace;
-        else if (old.equals(op2)) op2 = replace;
+        if (old.equals(op2)) op2 = replace;
 
     }
     @Override
@@ -89,8 +89,8 @@ public class IcmpInst extends Inst{
 
     @Override
     public void entity2const(Entity old, Entity val) {
-        if (op1.equals(old)) op1 = val;
-        else if (op2.equals(old)) op2 = val;
-        else result = val;
+        if (old.equals(op1)) op1 = val;
+        if (old.equals(op2)) op2 = val;
+        if (old.equals(result)) result = val;
     }
 }

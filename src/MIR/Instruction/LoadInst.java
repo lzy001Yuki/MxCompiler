@@ -32,7 +32,7 @@ public class LoadInst extends Inst{
     @Override
     public void replaceOperand(Entity old, Entity replace) {
         if (old.equals(pointer)) pointer = replace;
-        else result = replace;
+        if (old.equals(result)) result = replace;
     }
     @Override
     public Entity getConst() {return null;}
