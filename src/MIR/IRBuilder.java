@@ -81,7 +81,7 @@ public class IRBuilder implements ASTVisitor {
 //                                    localVar local = new localVar(varDef.assignNode.entity.type, generator.getName());
 //                                    curBlock.addInst(new LoadInst(local, varDef.assignNode.entity));
                                     curBlock.addInst(new StoreInst(loadPtr(varDef.assignNode.entity), gVar));
-                                }  else curBlock.addInst(new StoreInst(varDef.assignNode.entity, gVar));
+                                }  else if (!(varDef.assignNode instanceof initArrayExprNode))curBlock.addInst(new StoreInst(varDef.assignNode.entity, gVar));
 
                             }
                         }
