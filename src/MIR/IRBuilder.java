@@ -483,7 +483,7 @@ public class IRBuilder implements ASTVisitor {
                 res = new localVar(ptr.type, generator.getName());
                 CallInst inst = new CallInst(callFunc, res);
                 inst.para.add(ptr);
-                inst.para.add(loadPtr(expr.entity));
+                inst.para.add(expr.entity);
                 curBlock.addInst(inst);
                 return res;
             } else {
