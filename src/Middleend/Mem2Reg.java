@@ -104,7 +104,7 @@ public class Mem2Reg {
                 } else {
                     Entity replaced = replaceName(load.pointer.irName);
                     //if (check(objectPtr, load.pointer)) objectPtr.remove(load.pointer);
-                    if (replaced != null) inst.replaceOperand(load.pointer, replaced);
+                    if (replaced != null && ! (replaced instanceof constNull)) inst.replaceOperand(load.pointer, replaced);
                 }
             } else if (inst instanceof StoreInst store) {
                 if (!store.pointer.irName.contains("malloc_ptr") && !store.pointer.irName.contains("next_ptr") && !store.pointer.irName.contains("array_ptr") && !(store.pointer instanceof globalVar) && !check(objectPtr, store.pointer) && !judgeThis(store.pointer.irName)) {

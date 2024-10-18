@@ -64,6 +64,10 @@ public class IRBuilder implements ASTVisitor {
                     if (dim != 0) entry.getValue().returnType.isArray = true;
                     globalScope.addIrFunction(classFunc.irName, classFunc);
                 }
+                if (((classDefNode) def).constructor != null) {
+                    function constFunc = new function(((classDefNode) def).className + "." + ((classDefNode) def).className, new voidType(), true, ((classDefNode) def).className);
+                    globalScope.addIrFunction(constFunc.irName, constFunc);
+                }
             } else if (def instanceof varDefNode) {
                 for (var varDef: ((varDefNode) def).varList) {
                     String newName = rename(varDef.varName);
@@ -109,7 +113,7 @@ public class IRBuilder implements ASTVisitor {
         curBlock = null;
         for (var funcDef: it.definition) {
             if (funcDef instanceof classDefNode) funcDef.accept(this);
-            if (funcDef instanceof funcDefNode) {
+            if (funcDef instanceof funcDefNode && ! (funcDef instanceof mainDefNode)) {
                 curFunc = globalScope.getIrFunction(((funcDefNode) funcDef).funcName);
                 curBlock = new block("entry", curFunc);
                 curFunc.addBlock(curBlock);
@@ -238,7 +242,7 @@ public class IRBuilder implements ASTVisitor {
             GetelementInst inst16 = new GetelementInst(ptr3, pre_array);
             inst16.index.add(var3);
             curBlock.addInst(inst16);
-            StoreInst inst18 = new StoreInst(array_ptr, pre_array);
+            StoreInst inst18 = new StoreInst(array_ptr, ptr3);
             curBlock.addInst(inst18);
             BrInst inst17 = new BrInst(null, preLabel, null);
             curBlock.addInst(inst17);
@@ -521,7 +525,11 @@ public class IRBuilder implements ASTVisitor {
         Entity cur = it.exprNode.entity;
         for (int i = 0; i < it.index.size(); i++) {
             it.index.get(i).accept(this);
-            cur = loadPtr(cur);
+            if (! (it.exprNode instanceof funcExprNode)){
+                ExprNode isBasic = (it.exprNode instanceof basicExprNode basic) ? basic : null;
+                while (isBasic instanceof basicExprNode) isBasic = ((basicExprNode) isBasic).exprNode;
+                if ((!(isBasic instanceof arrayExprNode) && ! (isBasic instanceof varExprNode))|| i != 0) cur = loadPtr(cur);
+            }
             res = new localPtr(((ptrType) cur.type).baseType, rename("array_ptr"));
             GetelementInst inst = new GetelementInst(res, cur);
             cur = res;
@@ -586,7 +594,7 @@ public class IRBuilder implements ASTVisitor {
     public void visit(memberExprNode it){
         it.obj.accept(this);
         while (it.obj instanceof basicExprNode) it.obj = ((basicExprNode) it.obj).exprNode;
-        if (!(it.obj instanceof funcExprNode)) it.obj.entity = loadPtr(it.obj.entity);
+        if (!(it.obj instanceof funcExprNode) && ! (it.obj instanceof varExprNode)) it.obj.entity = loadPtr(it.obj.entity);
         if (it.obj.type.typeName.equals("string")) {
             function func = globalScope.getIrFunction("string." + it.member);
             it.entity = new function(func.irName, func.type, false, null);
@@ -928,7 +936,8 @@ public class IRBuilder implements ASTVisitor {
     public void visit(constructNode it){
         currentScope = new FuncScope(currentScope, new DataType("void"));
         curBlock = new block("entry", curFunc);
-        curFunc = new function(it.className + "." + it.className, new voidType(), true, it.className);
+        //curFunc = new function(it.className + "." + it.className, new voidType(), true, it.className);
+        curFunc = globalScope.getIrFunction(it.className + "." + it.className);
         curFunc.addBlock(curBlock);
         localPtr ptr = thisPtr;
         curBlock.addInst(new AllocaInst(ptr, new ptrType(), null));

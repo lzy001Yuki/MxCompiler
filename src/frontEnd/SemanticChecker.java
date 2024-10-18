@@ -51,7 +51,7 @@ public class SemanticChecker implements ASTVisitor {
     @Override
     public void visit(assignExprNode it){
         it.lhs.accept(this);
-        if (it.rhs instanceof initArrayExprNode) throw new Error("SemanticError", "Const array only allowed when created", it.pos);
+        //if (it.rhs instanceof initArrayExprNode) throw new Error("SemanticError", "Const array only allowed when created", it.pos);
         it.rhs.accept(this);
         if (it.rhs instanceof arrayExprNode) ((arrayExprNode)it.rhs).assignExpr = it.lhs;
         if (it.rhs instanceof initArrayExprNode) ((initArrayExprNode) it.rhs).assignNode = it.lhs;
