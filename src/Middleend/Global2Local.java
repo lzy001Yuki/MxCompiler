@@ -6,10 +6,7 @@ import MIR.irEntity.*;
 import MIR.utils.block;
 import utils.Scope.GlobalScope;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 public class Global2Local {
     public IRBuilder irBuilder;
@@ -32,11 +29,13 @@ public class Global2Local {
         block entryBlk = func.blocks.getFirst();
         HashMap<Entity, Entity> loc2glo = new HashMap<>();
         HashMap<Entity, Entity> glo2replace = new HashMap<>();
+        HashSet<Entity> allReplace = new HashSet<>();
         for (var entry: func.usedGlobal.entrySet()) {
             globalVar global = entry.getKey();
             if (global.changed) {
                 Entity replace = irBuilder.loadPtr(entry.getKey());
                 glo2replace.put(global, replace);
+                allReplace.add(replace);
                 entryBlk.instructions.addFirst(new LoadInst(replace, global));
                 for (var in : entry.getValue()) {
                     if (in instanceof LoadInst load && !loc2glo.containsKey(load.result)) loc2glo.put(load.result, replace);
@@ -52,6 +51,7 @@ public class Global2Local {
                 }
             }
         }
+        HashSet<Entity> gloUsedBefore = new HashSet<>();
         for (var blk: func.blocks) {
             ArrayList<Inst> newInsts = new ArrayList<>();
             for (var inst: blk.instructions) {
@@ -61,7 +61,9 @@ public class Global2Local {
                     if (next != null) {
                         for (var exa: func.usedGlobal.entrySet()) {
                             if (next.affineGlobal.contains(exa.getKey())) {
-                                newInsts.add(newInsts.size() - 1, new StoreInst(glo2replace.get(exa.getKey()), exa.getKey()));
+                                Entity getReplace = glo2replace.get(exa.getKey());
+                                //if (gloUsedBefore.contains(getReplace))
+                                    newInsts.add(newInsts.size() - 1, new StoreInst(getReplace, exa.getKey()));
                                 //newInsts.add(new LoadInst(glo2replace.get(exa.getKey()), exa.getKey()));
                             }
                         }
@@ -80,11 +82,15 @@ public class Global2Local {
                         if (store.value.isConstValue() || !loc2glo.containsKey(store.value))
                             move = new MoveInst(glo2replace.get(store.pointer), store.value);
                         else move = new MoveInst(glo2replace.get(store.pointer), loc2glo.get(store.value));
-                        if (!move.dest.equals(move.src)) newInsts.add(move);
+                        if (!move.dest.equals(move.src)) {
+                            newInsts.add(move);
+                            gloUsedBefore.add(glo2replace.get(store.pointer));
+                        }
                     }
                 }
                 Entity replace = loc2glo.get(inst.getDef());
                 if (replace != null) inst.replaceOperand(inst.getDef(), replace);
+                if (! (inst instanceof LoadInst) && allReplace.contains(inst.getDef())) gloUsedBefore.add(replace);
                 for (var use: inst.getUses()) {
                     replace = loc2glo.get(use);
                     if (replace != null) inst.replaceOperand(use, replace);
