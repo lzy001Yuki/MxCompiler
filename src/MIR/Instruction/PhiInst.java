@@ -15,6 +15,14 @@ public class PhiInst extends Inst{
         jump = new ArrayList<>();
     }
     @Override
+    public Inst getCopy() {
+        PhiInst phi = new PhiInst(result);
+        for (var j: jump) {
+            phi.jump.add(new Pair<>(j));
+        }
+        return phi;
+    }
+    @Override
     public String toString() {
         StringBuilder ans = new StringBuilder();
         ans.append(result.getName()).append(" = phi ").append(result.type).append(" ");

@@ -15,6 +15,8 @@ public class BrInst extends Inst{
         if (str2 != null)  iffalse = str2;
     }
     @Override
+    public Inst getCopy() {return new BrInst(cond, iftrue, iffalse);}
+    @Override
     public String toString() {
         if (cond != null) return "br "+cond+", label %"+iftrue+", label %"+iffalse;
         else return "br label %" +iftrue;

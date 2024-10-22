@@ -13,6 +13,10 @@ public class LoadInst extends Inst{
         pointer = e;
     }
     @Override
+    public Inst getCopy() {
+        return new LoadInst(result, pointer);
+    }
+    @Override
     public String toString() {
         return result.getName()+" = load " + result.type+", ptr " + pointer.getName();
     }

@@ -331,6 +331,14 @@ public class InstSelector implements IRVisitor {
         curBlock.addInst(new StoreInst("sw", dest, pointerReg, new Imm(0)));
     }
 
+    public void visit(CommentInst it) {
+        curBlock.addInst(new Comment(it.comment));
+    }
+    @Override
+    public void visit(InlineInst it) {
+        for (var blk: it.blocks) blk.accept(this);
+    }
+
     @Override
     public void visit(MIR.Instruction.MoveInst it) {
         curBlock.addInst(new Comment(it.toString()));
@@ -377,5 +385,4 @@ public class InstSelector implements IRVisitor {
         first.next.add(second);
         second.prev.add(first);
     }
-
 }

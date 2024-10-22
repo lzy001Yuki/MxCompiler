@@ -13,6 +13,8 @@ public class StoreInst extends Inst{
         this.pointer = obj2;
     }
     @Override
+    public Inst getCopy() {return new StoreInst(value, pointer);}
+    @Override
     public String toString() {
         return "store "+value.type+" "+value.getName()+", ptr "+pointer.getName();
     }

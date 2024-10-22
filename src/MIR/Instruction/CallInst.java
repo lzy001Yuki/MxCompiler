@@ -21,6 +21,17 @@ public class CallInst extends Inst{
         funcName = func.irName;
         ret = new localVar(func.type, name);
     }
+    public CallInst(String funcName) {
+        this.funcName = funcName;
+        para = new ArrayList<>();
+    }
+    @Override
+    public Inst getCopy() {
+        CallInst call = new CallInst(funcName);
+        call.ret = ret;
+        call.para.addAll(para);
+        return call;
+    }
     public CallInst(function func, Entity vari) {
         para = new ArrayList<>();
         if (!func.paraList.isEmpty()) {

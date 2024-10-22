@@ -21,6 +21,7 @@ public class block {
     public HashSet<block> dc;
     public boolean isDead = false;
     public boolean needPhi = false;
+    public boolean hasInline = false;
     public block(String str, function parent) {
         lab = str;
         parentFunc = parent;

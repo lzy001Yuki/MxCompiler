@@ -42,6 +42,7 @@ public class Main {
             output.println(irBuilder);
             Optimizer optimizer = new Optimizer(globalScope, irBuilder);
             optimizer.run();
+            //optimizer.run();
             var output1 = new PrintStream(new FileOutputStream("irOptimizer.txt"));
             output1.println(irBuilder);
 //            var output4 = new PrintStream(new FileOutputStream("phiElimination.txt"));

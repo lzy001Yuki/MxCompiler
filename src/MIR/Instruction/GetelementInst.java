@@ -16,6 +16,12 @@ public class GetelementInst extends Inst{
         ptrVal = ptr;
         index = new ArrayList<>();
     }
+    @Override
+    public Inst getCopy() {
+        GetelementInst get = new GetelementInst(result, ptrVal);
+        get.index.addAll(index);
+        return get;
+    }
 
     @Override
     public String toString() {

@@ -176,7 +176,6 @@ public class IRBuilder implements ASTVisitor {
         }
 
     }
-
     private void multiInit(int dim, ArrayList<ExprNode> array, localPtr pre_ptr, localPtr iter_ptr,localPtr pre_array,  localPtr array_ptr, String preLabel, String label) {
         curBlock = new block(label, curFunc);
         curFunc.addBlock(curBlock);

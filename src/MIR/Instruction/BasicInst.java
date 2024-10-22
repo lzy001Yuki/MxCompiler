@@ -12,6 +12,8 @@ public class BasicInst extends Inst{
         instStr = str;
     }
     @Override
+    public Inst getCopy() {return new BasicInst(instStr);}
+    @Override
     public String toString() {
         return instStr;
     }
@@ -35,4 +37,5 @@ public class BasicInst extends Inst{
 
     @Override
     public void entity2const(Entity old, Entity val) {}
+
 }

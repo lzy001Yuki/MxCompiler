@@ -8,13 +8,17 @@ import java.util.ArrayList;
 public class IcmpInst extends Inst{
     public Entity result;
     public String op;
+    public String oStr;
     public Entity op1, op2;
     public IcmpInst(Entity v, String str, Entity op1, Entity op2) {
         this.op1 = op1;
         this.op2 = op2;
         result = v;
+        oStr = str;
         op = advertCmp(str);
     }
+    @Override
+    public Inst getCopy() {return new IcmpInst(result, oStr, op1, op2);}
 
     @Override
     public String toString() {

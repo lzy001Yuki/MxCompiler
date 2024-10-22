@@ -14,6 +14,8 @@ public class MoveInst extends Inst{
         this.src = src;
     }
     @Override
+    public Inst getCopy() {return new MoveInst(dest, src);}
+    @Override
     public String toString() {
         return "move " + dest.getName() + ", " + src.getName();
     }

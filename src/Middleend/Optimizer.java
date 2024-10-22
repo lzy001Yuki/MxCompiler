@@ -39,15 +39,17 @@ public class Optimizer {
 //    }
 //    output.println(irBuilder);
 
+        SCCP sccp = new SCCP(globalScope);
+        sccp.run();
+       Global2Local g2l = new Global2Local(irBuilder);
+       g2l.run();
         try {
             output = new PrintStream(new FileOutputStream("mem2reg.txt"));
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
         output.println(irBuilder);
-        SCCP sccp = new SCCP(globalScope);
-        sccp.run();
-       Global2Local g2l = new Global2Local(irBuilder);
-       g2l.run();
+        SimpleInline simpleInline = new SimpleInline(globalScope, irBuilder);
+        simpleInline.run();
     }
 }

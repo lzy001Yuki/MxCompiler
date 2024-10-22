@@ -10,14 +10,18 @@ import java.util.ArrayList;
 public class BinaryInst extends Inst{
     public Entity result;
     public String op;
+    public String oStr;
     public Entity op1, op2;
     public BinaryInst(Entity v, String str, Entity op1, Entity op2) {
         if (op1.type instanceof ptrType) throw new RuntimeException("error in binaryinst type");
         result = v;
         this.op1 = op1;
         this.op2 = op2;
+        oStr = str;
         op = advertOp(str);
     }
+    @Override
+    public Inst getCopy() {return new BinaryInst(result, oStr, op1, op2);}
     @Override
     public String toString() {
         return result.getName() + " = " + op + " " + op1.type + " " + op1.getName() + ", " + op2.getName();

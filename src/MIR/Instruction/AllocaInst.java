@@ -16,6 +16,10 @@ public class AllocaInst extends Inst{
         this.allocType = type;
         this.className = str;
     }
+    @Override
+    public Inst getCopy() {
+        return new AllocaInst(result, allocType, className);
+    }
 
     @Override
     public String toString() {

@@ -18,4 +18,5 @@ public abstract class Inst{
     abstract public void replaceOperand(Entity old, Entity replace);
     abstract public Entity getConst();
     abstract public void entity2const(Entity old, Entity val);
+    abstract public Inst getCopy();
 }

@@ -16,6 +16,8 @@ public class RetInst extends Inst{
         retType = new Entity(type, name);
     }
     @Override
+    public Inst getCopy() {return new RetInst(retType);}
+    @Override
     public String toString() {
         if (retType.type instanceof voidType) return "ret void";
         else return "ret " + retType.type + " " + retType.getName();

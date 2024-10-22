@@ -3,6 +3,7 @@ package MIR;
 import MIR.Instruction.*;
 import MIR.irEntity.function;
 import MIR.utils.block;
+import Middleend.Inline;
 import utils.Scope.GlobalScope;
 
 public interface IRVisitor {
@@ -21,4 +22,6 @@ public interface IRVisitor {
     public void visit(RetInst it);
     public void visit(StoreInst it);
     public void visit(MoveInst it);
+    public void visit(CommentInst it);
+    public void visit(InlineInst it);
 }
