@@ -62,7 +62,7 @@ public class Global2Local {
                         for (var exa: func.usedGlobal.entrySet()) {
                             if (next.affineGlobal.contains(exa.getKey())) {
                                 Entity getReplace = glo2replace.get(exa.getKey());
-                                //if (gloUsedBefore.contains(getReplace))
+                                if (gloUsedBefore.contains(getReplace))
                                     newInsts.add(newInsts.size() - 1, new StoreInst(getReplace, exa.getKey()));
                                 //newInsts.add(new LoadInst(glo2replace.get(exa.getKey()), exa.getKey()));
                             }
