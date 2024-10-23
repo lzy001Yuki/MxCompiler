@@ -35,7 +35,7 @@ public class Optimizer {
 //        } catch (FileNotFoundException e) {
 //            throw new RuntimeException(e);
 //        }
-        output.println(irBuilder);
+        //output.println(irBuilder);
        Global2Local g2l = new Global2Local(irBuilder);
        g2l.run();
 
@@ -44,7 +44,7 @@ public class Optimizer {
 //        } catch (FileNotFoundException e) {
 //            throw new RuntimeException(e);
 //        }
-        output.println(irBuilder);
+        //output.println(irBuilder);
         TailCallElimination tailCallElimination = new TailCallElimination(globalScope);
         tailCallElimination.run();
 //        SimpleInline simpleInline = new SimpleInline(globalScope, irBuilder);
