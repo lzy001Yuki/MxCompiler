@@ -51,3 +51,4 @@ phiElimination.txt
 .xmake
 input
 mem2reg.txt
+sccp.txt

@@ -79,8 +79,9 @@ public class RegAllocator {
             if (stackSpace < 2048) func.addFirst(new ITypeInst("addi", regs.getPhyReg("sp"), regs.getPhyReg("sp"), new Imm(-stackSpace)));
             else {
                 PhysicReg tmp = getIdleReg();
-                func.addFirst(new BinaryInst("add", regs.getPhyReg("sp"), regs.getPhyReg("sp"), tmp));
                 func.addFirst(new LiInst(tmp, new Imm(-stackSpace)));
+                func.addFirst(new BinaryInst("add", regs.getPhyReg("sp"), regs.getPhyReg("sp"), tmp));
+
                 setIdle(tmp);
             }
             func.addFirst(new MvInst(regs.getPhyReg("sp"), regs.getPhyReg("s0")));

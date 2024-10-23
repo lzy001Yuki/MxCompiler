@@ -3,6 +3,7 @@ package MIR.utils;
 import MIR.IRVisitor;
 import MIR.Instruction.Inst;
 import MIR.Instruction.PhiInst;
+import MIR.irEntity.Entity;
 import MIR.irEntity.function;
 
 import java.util.ArrayList;
@@ -22,6 +23,8 @@ public class block {
     public boolean isDead = false;
     public boolean needPhi = false;
     public boolean hasInline = false;
+    public boolean retCall = false;
+    public HashSet<Entity> gloDefCur = new HashSet<>();
     public block(String str, function parent) {
         lab = str;
         parentFunc = parent;

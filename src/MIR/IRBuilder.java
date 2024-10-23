@@ -861,8 +861,10 @@ public class IRBuilder implements ASTVisitor {
                 curFunc.retBlks.add(curBlock);
                 return;
             }
-            if (it.exprNode instanceof funcExprNode) curBlock.addInst(new RetInst(it.exprNode.entity));
-            else curBlock.addInst(new RetInst(loadPtr(it.exprNode.entity)));
+            if (it.exprNode instanceof funcExprNode) {
+                curBlock.addInst(new RetInst(it.exprNode.entity));
+                curBlock.retCall = true;
+            } else curBlock.addInst(new RetInst(loadPtr(it.exprNode.entity)));
             curFunc.retBlks.add(curBlock);
             curBlock = new block();
         } else {

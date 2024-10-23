@@ -8,6 +8,7 @@ import Assembly.Operand.VirtualReg;
 import Assembly.utils.CGBuilder;
 import Assembly.utils.CGEdge;
 import Assembly.utils.RegStore;
+import MIR.Instruction.BrInst;
 import MIR.Instruction.Inst;
 import Middleend.LivenessAnalysis;
 import utils.Pair;
@@ -76,6 +77,7 @@ public class AdvRegAllocator {
                 if (inst instanceof RetInst) {
                     retBlock.add(blk);
                 }
+                if (inst instanceof JumpInst j && j.dest.contains(".entry")) retBlock.add(blk);
                 if (inst.rs1 instanceof VirtualReg) {
                     inst.rs1 = inst.rs1.color;
                 }
@@ -99,6 +101,9 @@ public class AdvRegAllocator {
         checkImm(entryBlk.inst, in, 0, in.imm, true);
         for (var retBlk: retBlock) {
             int pos = 0;
+            if (retBlk.inst.getLast() instanceof JumpInst) {
+                pos = retBlk.inst.size() - 1;
+            }
             for (int i = 0; i < retBlk.inst.size(); i++) {
                 if (retBlk.inst.get(i) instanceof RetInst) pos = i;
             }

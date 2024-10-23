@@ -44,20 +44,20 @@ public class DeadCodeElimination {
                     defs.add(inst.getDef());
                     if (inst.getDef() instanceof globalVar global) {
                         global.changed = true;
-                        if (((ptrType)global.type).baseType.constType()) {
+                        //if (((ptrType)global.type).baseType.constType()) {
                             if (func.usedGlobal.containsKey(global)) func.usedGlobal.get(global).add(inst);
                             else {
                                 func.usedGlobal.put(global, new ArrayList<>());
                                 func.usedGlobal.get(global).add(inst);
                             }
                             func.defGlobal.add(global);
-                        }
+                        //}
                     }
                 }
                 for (var use: inst.getUses()) {
                     if (!entity2use.containsKey(use)) entity2use.put(use, new HashSet<>());
                     entity2use.get(use).add(inst);
-                    if (use instanceof globalVar global && ((ptrType)global.type).baseType.constType()) {
+                    if (use instanceof globalVar global) {
                         if (func.usedGlobal.containsKey(global)) func.usedGlobal.get(global).add(inst);
                         else {
                             func.usedGlobal.put(global, new ArrayList<>());
