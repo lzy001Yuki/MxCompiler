@@ -24,7 +24,10 @@ public class block {
     public boolean needPhi = false;
     public boolean hasInline = false;
     public boolean retCall = false;
+    //public HashSet<Entity> gloDefCur = new HashSet<>();
     public HashSet<Entity> gloDefCur = new HashSet<>();
+    public HashSet<Entity> gloDefOther = new HashSet<>();
+    public HashSet<Entity> gloUsedCur = new HashSet<>();
     public block(String str, function parent) {
         lab = str;
         parentFunc = parent;

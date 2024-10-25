@@ -21,7 +21,7 @@ public class Optimizer {
         domTree.build();
         Mem2Reg optimizer = new Mem2Reg(irBuilder);
         optimizer.run(globalScope);
-        DeadCodeElimination deadCodeElimination = new DeadCodeElimination(globalScope);
+        DeadCodeElimination deadCodeElimination = new DeadCodeElimination(globalScope, true);
         deadCodeElimination.run();
 
         PhiElimination phiElimination = new PhiElimination(globalScope);
@@ -39,14 +39,17 @@ public class Optimizer {
        Global2Local g2l = new Global2Local(irBuilder);
        g2l.run();
 
+
 //        try {
 //            output = new PrintStream(new FileOutputStream("mem2reg.txt"));
 //        } catch (FileNotFoundException e) {
 //            throw new RuntimeException(e);
 //        }
         //output.println(irBuilder);
+        //new DeadCodeElimination(globalScope, false).run();
         TailCallElimination tailCallElimination = new TailCallElimination(globalScope);
         tailCallElimination.run();
+
 //        SimpleInline simpleInline = new SimpleInline(globalScope, irBuilder);
 //        simpleInline.run();
     }

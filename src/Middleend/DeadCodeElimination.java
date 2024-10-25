@@ -21,8 +21,10 @@ import java.util.LinkedList;
 public class DeadCodeElimination {
     public GlobalScope globalScope;
     public HashMap<String, HashSet<String>> func2call = new HashMap<>();
-    public DeadCodeElimination(GlobalScope globalScope) {
+    boolean g2lOn = false;
+    public DeadCodeElimination(GlobalScope globalScope, boolean flag) {
         this.globalScope = globalScope;
+        this.g2lOn = flag;
     }
     public void run() {
         for (var func: globalScope.irFunction.entrySet()) {
@@ -31,6 +33,7 @@ public class DeadCodeElimination {
         for (var func: globalScope.irFunction.entrySet()) {
             func.getValue().affineGlobal = getOtherGlobal(func.getValue());
         }
+
     }
     public void workOnFunc(function func) {
         HashMap<Entity, HashSet<Inst>> entity2use = new HashMap<>();
@@ -45,25 +48,29 @@ public class DeadCodeElimination {
                     if (inst.getDef() instanceof globalVar global) {
                         global.changed = true;
                         //if (((ptrType)global.type).baseType.constType()) {
+                        if (g2lOn) {
                             if (func.usedGlobal.containsKey(global)) func.usedGlobal.get(global).add(inst);
                             else {
                                 func.usedGlobal.put(global, new ArrayList<>());
                                 func.usedGlobal.get(global).add(inst);
                             }
                             func.defGlobal.add(global);
+                        }
                         //}
                     }
                 }
                 for (var use: inst.getUses()) {
                     if (!entity2use.containsKey(use)) entity2use.put(use, new HashSet<>());
                     entity2use.get(use).add(inst);
-                    if (use instanceof globalVar global) {
-                        if (func.usedGlobal.containsKey(global)) func.usedGlobal.get(global).add(inst);
-                        else {
-                            func.usedGlobal.put(global, new ArrayList<>());
-                            func.usedGlobal.get(global).add(inst);
+                    if (g2lOn) {
+                        if (use instanceof globalVar global) {
+                            if (func.usedGlobal.containsKey(global)) func.usedGlobal.get(global).add(inst);
+                            else {
+                                func.usedGlobal.put(global, new ArrayList<>());
+                                func.usedGlobal.get(global).add(inst);
+                            }
+                            inst.isDead = true;
                         }
-                        inst.isDead = true;
                     }
                 }
                 if (inst instanceof CallInst call) func2call.get(func.irName).add(call.funcName);
@@ -102,7 +109,7 @@ public class DeadCodeElimination {
     public boolean noDel(Inst defInst) {
         if (defInst instanceof CallInst || defInst == null || defInst instanceof MoveInst) return true;
         if (defInst instanceof StoreInst store) {
-            if (store.pointer instanceof globalVar || ((Ptr)store.pointer).isElement) return true;
+            if ((store.pointer instanceof globalVar && g2lOn)|| ((Ptr)store.pointer).isElement) return true;
             else return false;
         }
         return false;
