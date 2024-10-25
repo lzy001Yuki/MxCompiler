@@ -1,5 +1,6 @@
 import java.io.*;
 
+import Assembly.ASMOptimize;
 import Assembly.AdvRegAllocator;
 import Assembly.InstSelector;
 import Assembly.RegAllocator;
@@ -57,6 +58,8 @@ public class Main {
 //            System.out.println(regAllocator);
             AdvRegAllocator advregAllocator = new AdvRegAllocator(selector.asmProgram);
             advregAllocator.run();
+            ASMOptimize asmOptimize = new ASMOptimize(selector.asmProgram);
+            asmOptimize.run();
             var output2 = new PrintStream(new FileOutputStream("tmp/test.s"));
             output2.println(advregAllocator);
             //printBuiltin();

@@ -1,5 +1,6 @@
 import java.io.*;
 
+import Assembly.ASMOptimize;
 import Assembly.AdvRegAllocator;
 import Assembly.InstSelector;
 import Assembly.RegAllocator;
@@ -45,6 +46,8 @@ public class Test {
 //            RegAllocator advregAllocator = new RegAllocator(selector.asmProgram);
             AdvRegAllocator advregAllocator = new AdvRegAllocator(selector.asmProgram);
             advregAllocator.run();
+            ASMOptimize asmOptimize = new ASMOptimize(selector.asmProgram);
+            asmOptimize.run();
             printBuiltin();
             System.out.println(advregAllocator);
         } catch (Error error) {

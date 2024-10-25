@@ -109,7 +109,7 @@ public class DeadCodeElimination {
     public boolean noDel(Inst defInst) {
         if (defInst instanceof CallInst || defInst == null || defInst instanceof MoveInst) return true;
         if (defInst instanceof StoreInst store) {
-            if ((store.pointer instanceof globalVar && g2lOn)|| ((Ptr)store.pointer).isElement) return true;
+            if ((store.pointer instanceof globalVar)|| ((Ptr)store.pointer).isElement) return true;
             else return false;
         }
         return false;

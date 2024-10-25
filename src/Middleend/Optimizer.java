@@ -46,7 +46,7 @@ public class Optimizer {
 //            throw new RuntimeException(e);
 //        }
         //output.println(irBuilder);
-        //new DeadCodeElimination(globalScope, false).run();
+//        new DeadCodeElimination(globalScope, false).run();
         TailCallElimination tailCallElimination = new TailCallElimination(globalScope);
         tailCallElimination.run();
 
