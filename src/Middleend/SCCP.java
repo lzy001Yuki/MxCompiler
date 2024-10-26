@@ -72,7 +72,7 @@ public class SCCP {
                     if (trueBlock == null || falseBlock == null) continue;
                     curBlock.instructions.removeLast();
                     curBlock.next.remove(removed);
-                    curBlock.instructions.add(new BrInst(null, retained.lab, null));
+                    curBlock.addInst(new BrInst(null, retained.lab, null));
                     processPhi(removed, curBlock, func);
                 }
             }

@@ -1,12 +1,16 @@
 package MIR.utils;
 
 import MIR.IRVisitor;
+import MIR.Instruction.BrInst;
+import MIR.Instruction.IcmpInst;
 import MIR.Instruction.Inst;
 import MIR.Instruction.PhiInst;
 import MIR.irEntity.Entity;
 import MIR.irEntity.function;
+import utils.Pair;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 

@@ -127,8 +127,10 @@ public class IRBuilder implements ASTVisitor {
                 curBlock = new block("entry", curFunc);
                 curFunc.addBlock(curBlock);
                 function init_ = globalScope.getIrFunction("global_init");
-                CallInst inst = new CallInst(init_, "void_return");
-                curBlock.addInst(inst);
+                if (init_.blocks.size() != 1 || init_.blocks.getFirst().instructions.size() != 1) {
+                    CallInst inst = new CallInst(init_, "void_return");
+                    curBlock.addInst(inst);
+                }
                 def.accept(this);
                 globalScope.addIrFunction("main", curFunc);
                 currentScope = currentScope.parentScope;

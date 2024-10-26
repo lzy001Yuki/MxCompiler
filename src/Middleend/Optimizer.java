@@ -50,7 +50,5 @@ public class Optimizer {
         TailCallElimination tailCallElimination = new TailCallElimination(globalScope);
         tailCallElimination.run();
 
-//        SimpleInline simpleInline = new SimpleInline(globalScope, irBuilder);
-//        simpleInline.run();
     }
 }

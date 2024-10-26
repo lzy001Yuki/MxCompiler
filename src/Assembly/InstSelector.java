@@ -19,6 +19,7 @@ import utils.Scope.Scope;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import MIR.irEntity.*;
 import MIR.type.*;
@@ -52,6 +53,18 @@ public class InstSelector implements IRVisitor {
             funcNum++;
             curFunc = new ASMFunction(entry.getValue().irName);
             asmProgram.text.add(curFunc);
+            for (var blk: entry.getValue().blocks) {
+                for (Inst in : blk.instructions) {
+                    if (in instanceof IcmpInst icmp) {
+                        entry.getValue().icmpCollect.put(icmp.result, icmp);
+                    }
+                    if (! (in instanceof BrInst)) {
+                        for (var use: in.getUses()) {
+                            entry.getValue().icmpCollect.remove(use);
+                        }
+                    }
+                }
+            }
             entry.getValue().accept(this);
             curFunc.virtualNum = VirtualReg.cnt;
         }
@@ -154,8 +167,43 @@ public class InstSelector implements IRVisitor {
     }
     @Override
     public void visit(BrInst it){
-
         curBlock.addInst(new Comment(it.toString()));
+        if (it.belongedBlock.parentFunc.icmpCollect.containsKey(it.cond)) {
+            IcmpInst icmp = it.belongedBlock.parentFunc.icmpCollect.get(it.cond);
+            icmp.result.operand = new VirtualReg();
+            Reg lhs, rhs;
+            lhs = getVirReg(icmp.op1);
+            rhs = getVirReg(icmp.op2);
+            switch (icmp.op) {
+                case "slt" -> {
+                    curBlock.addInst(new CompInst(lhs, rhs, "blt", getLabel() + it.iftrue));
+                    curBlock.addInst(new JumpInst(getLabel() + it.iffalse));
+                }
+                case "sgt" -> {
+                    curBlock.addInst(new CompInst(rhs, lhs, "blt", getLabel() + it.iftrue));
+                    curBlock.addInst(new JumpInst(getLabel() + it.iffalse));
+                }
+                case "eq" -> {
+                    curBlock.addInst(new CompInst(lhs, rhs, "beq", getLabel() + it.iftrue));
+                    curBlock.addInst(new JumpInst(getLabel() + it.iffalse));
+                }
+                case "ne" -> {
+                    curBlock.addInst(new CompInst(lhs, rhs, "bne", getLabel() + it.iftrue));
+                    curBlock.addInst(new JumpInst(getLabel() + it.iffalse));
+                }
+                case "sle" -> {
+                    curBlock.addInst(new CompInst(rhs, lhs, "bge", getLabel() + it.iftrue));
+                    curBlock.addInst(new JumpInst(getLabel() + it.iffalse));
+                }
+                case "sge" -> {
+                    curBlock.addInst(new CompInst(lhs, rhs, "bge", getLabel() + it.iftrue));
+                    curBlock.addInst(new JumpInst(getLabel() + it.iffalse));
+                }
+            }
+            link(curBlock.label, getLabel() + it.iftrue);
+            link(curBlock.label, getLabel() + it.iffalse);
+            return;
+        }
         //Reg tmp = null;
         //Label label = null;
         //if (!curBlock.label.contains("short_") || it.iftrue.contains("short_next")) {
@@ -233,36 +281,39 @@ public class InstSelector implements IRVisitor {
     @Override
     public void visit(IcmpInst it){
         curBlock.addInst(new Comment(it.toString()));
-        it.result.operand = new VirtualReg();
-        Reg lhs, rhs;
-        lhs = getVirReg(it.op1);
-        rhs = getVirReg(it.op2);
-        switch (it.op) {
-            case "slt" -> curBlock.addInst(new BinaryInst("slt", (Reg) it.result.operand, lhs, rhs));
-            case "sgt" -> curBlock.addInst(new BinaryInst("slt", (Reg) it.result.operand, rhs, lhs));
-            case "eq" -> {
-                curBlock.addInst(new BinaryInst("xor", (Reg) it.result.operand, lhs, rhs));
-                curBlock.addInst(new BinaryInst("seqz", (Reg) it.result.operand, (Reg) it.result.operand, null));
-            }
-            case "ne" -> {
-                curBlock.addInst(new BinaryInst("xor", (Reg) it.result.operand, lhs, rhs));
-                curBlock.addInst(new BinaryInst("snez", (Reg) it.result.operand, (Reg) it.result.operand, null));
-            }
-            case "sle" -> {
-                Reg lessReg = new VirtualReg();
-                Reg equalReg = new VirtualReg();
-                curBlock.addInst(new BinaryInst("sub", lessReg, lhs, rhs));
-                curBlock.addInst(new BinaryInst("seqz", equalReg, lessReg, null));
-                curBlock.addInst(new BinaryInst("slt", lessReg, lessReg, RegStore.regs.get("zero")));
-                curBlock.addInst(new BinaryInst("or", (Reg) it.result.operand, lessReg, equalReg));
-            }
-            case "sge" -> {
-                Reg lessReg = new VirtualReg();
-                Reg equalReg = new VirtualReg();
-                curBlock.addInst(new BinaryInst("sub", lessReg, lhs, rhs));
-                curBlock.addInst(new BinaryInst("seqz", equalReg, lessReg, null));
-                curBlock.addInst(new BinaryInst("slt", lessReg, RegStore.regs.get("zero"), lessReg));
-                curBlock.addInst(new BinaryInst("or", (Reg) it.result.operand, lessReg, equalReg));
+        if (!it.belongedBlock.parentFunc.icmpCollect.containsKey(it.result)) {
+            curBlock.addInst(new Comment(it.toString()));
+            it.result.operand = new VirtualReg();
+            Reg lhs, rhs;
+            lhs = getVirReg(it.op1);
+            rhs = getVirReg(it.op2);
+            switch (it.op) {
+                case "slt" -> curBlock.addInst(new BinaryInst("slt", (Reg) it.result.operand, lhs, rhs));
+                case "sgt" -> curBlock.addInst(new BinaryInst("slt", (Reg) it.result.operand, rhs, lhs));
+                case "eq" -> {
+                    curBlock.addInst(new BinaryInst("xor", (Reg) it.result.operand, lhs, rhs));
+                    curBlock.addInst(new BinaryInst("seqz", (Reg) it.result.operand, (Reg) it.result.operand, null));
+                }
+                case "ne" -> {
+                    curBlock.addInst(new BinaryInst("xor", (Reg) it.result.operand, lhs, rhs));
+                    curBlock.addInst(new BinaryInst("snez", (Reg) it.result.operand, (Reg) it.result.operand, null));
+                }
+                case "sle" -> {
+                    Reg lessReg = new VirtualReg();
+                    Reg equalReg = new VirtualReg();
+                    curBlock.addInst(new BinaryInst("sub", lessReg, lhs, rhs));
+                    curBlock.addInst(new BinaryInst("seqz", equalReg, lessReg, null));
+                    curBlock.addInst(new BinaryInst("slt", lessReg, lessReg, RegStore.regs.get("zero")));
+                    curBlock.addInst(new BinaryInst("or", (Reg) it.result.operand, lessReg, equalReg));
+                }
+                case "sge" -> {
+                    Reg lessReg = new VirtualReg();
+                    Reg equalReg = new VirtualReg();
+                    curBlock.addInst(new BinaryInst("sub", lessReg, lhs, rhs));
+                    curBlock.addInst(new BinaryInst("seqz", equalReg, lessReg, null));
+                    curBlock.addInst(new BinaryInst("slt", lessReg, RegStore.regs.get("zero"), lessReg));
+                    curBlock.addInst(new BinaryInst("or", (Reg) it.result.operand, lessReg, equalReg));
+                }
             }
         }
     }

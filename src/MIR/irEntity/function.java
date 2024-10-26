@@ -2,6 +2,7 @@ package MIR.irEntity;
 
 import MIR.IRVisitor;
 import MIR.Instruction.CallInst;
+import MIR.Instruction.IcmpInst;
 import MIR.Instruction.InlineInst;
 import MIR.Instruction.Inst;
 import MIR.type.IRType;
@@ -25,7 +26,7 @@ public class function extends Entity{
     public ArrayList<block> retBlks = new ArrayList<>();
     public HashMap<function, ArrayList<block>> inFunc = new HashMap<>();
     public HashMap<CallInst, InlineInst> insertInline = new HashMap<>();
-
+    public HashMap<Entity, IcmpInst> icmpCollect = new HashMap<>();
     public HashMap<Entity, HashSet<Inst>> entity2use = new HashMap<>();
     public function(String funcName, IRType ret, boolean flag, String clsName) {
         super(ret, funcName);
