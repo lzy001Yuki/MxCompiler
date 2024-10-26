@@ -53,14 +53,16 @@ public class InstSelector implements IRVisitor {
             funcNum++;
             curFunc = new ASMFunction(entry.getValue().irName);
             asmProgram.text.add(curFunc);
-            for (var blk: entry.getValue().blocks) {
-                for (Inst in : blk.instructions) {
-                    if (in instanceof IcmpInst icmp) {
-                        entry.getValue().icmpCollect.put(icmp.result, icmp);
-                    }
-                    if (! (in instanceof BrInst)) {
-                        for (var use: in.getUses()) {
-                            entry.getValue().icmpCollect.remove(use);
+            if (entry.getValue().blocks.size() < 2000) {
+                for (var blk : entry.getValue().blocks) {
+                    for (Inst in : blk.instructions) {
+                        if (in instanceof IcmpInst icmp) {
+                            entry.getValue().icmpCollect.put(icmp.result, icmp);
+                        }
+                        if (!(in instanceof BrInst)) {
+                            for (var use : in.getUses()) {
+                                entry.getValue().icmpCollect.remove(use);
+                            }
                         }
                     }
                 }
